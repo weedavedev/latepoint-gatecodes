@@ -17,7 +17,8 @@ if (!defined('ABSPATH')) {
  * @param DateTime $date The date to extract the week number from
  * @return string The formatted gate code or "#ERR" if invalid parameters are provided
  */
-function generate_gate_code($field, $date) {
+function generate_gate_code($field, $date)
+{
     if (!$date instanceof DateTime || !is_int($field)) {
         return "#ERR";
     }
@@ -30,11 +31,28 @@ function generate_gate_code($field, $date) {
  * @param object $booking The booking object
  * @return void
  */
-function show_gate_code($booking) {
+function show_gate_code($confirmation)
+{
+    //If the confirmation is an order of single booking, extract only booking
+    if ($confirmation instanceof OsOrderModel) {
+        $bookings = $confirmation->get_bookings_from_order_items();
+
+        if (count($bookings) === 1) {
+            $booking = $bookings[0];
+        } else if (count($bookings) > 1) {
+//            return message for multiple bookings
+            echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
+                echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">Multiple bookings found <br> Check individual bookings for separate gate codes</div>';
+            echo '</div>';
+            return;
+        }
+    }
+
+    //procees with showing booking gatecode
     error_log('booking status: ' . $booking->status);
 
     // Check if booking is approved (case insensitive comparison)
-    if (strtolower($booking->status) === 'approved') {
+    if (strtolower($booking->status) === 'aprooved') {
         // Convert booking date to DateTime object
         try {
             $booking_date = new DateTime($booking->start_date);
@@ -42,8 +60,8 @@ function show_gate_code($booking) {
             $gate_code = generate_gate_code($agent_id, $booking_date);
 
             echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
-                echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE CODE</div>';
-                echo '<div style="font-weight: bold; color: #2d54de; font-size: 20px;">' . $gate_code . '</div>';
+            echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE CODE</div>';
+            echo '<div style="font-weight: bold; color: #2d54de; font-size: 20px;">' . $gate_code . '</div>';
             echo '</div>';
         } catch (Exception $e) {
             error_log('Error creating gate code: ' . $e->getMessage());
@@ -53,6 +71,8 @@ function show_gate_code($booking) {
 
 // Add the hook correctly
 add_action('latepoint_booking_full_summary_before', 'show_gate_code', 10, 1);
+add_action('latepoint_step_confirmation_head_info_after', 'show_gate_code', 10, 1);
+
 
 
 //// Add gate code only to a specific part of the summary
