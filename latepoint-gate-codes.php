@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: LatePoint Gate Code Simplified
- * Description: Adds a gatecode to booking summary, and confirmation's.
+ * Plugin Name: LatePoint Addon - Gatecodes
+ * Description: LatePoint Addon that adds a gate code to booking summary, and confirmation's.
  * Version: 1.0.0
  * Author: Wallace Development
  * Plugin URI: https://wallacedevelopment.co.uk
@@ -44,8 +44,7 @@ add_action('latepoint_booking_summary_after_summary_box', function ($booking) {
 
 // Add gate code to calendar description but avoid interfering with other parameters
 add_filter('latepoint_build_add_to_calendar_link_params', function ($params, $booking) {
-    error_log($booking . " Received with params " . print_r($params));
-
+//    error_log($booking . " Received with params " . print_r($params));
 
     // Only proceed if we have valid parameters and booking
     if (!is_array($params) || !isset($params['description']) || !is_object($booking)) {
