@@ -24,48 +24,80 @@ function generate_gate_code($field, $date) {
     return "#" . $field . $field . sprintf("%02d", $date->format("W"));
 }
 
-// Add gate code only to a specific part of the summary
-// Using a safer hook that comes later in the process
-add_action('latepoint_booking_summary_after_summary_box', function ($booking) {
+/**
+ * Displays a gate code in the booking summary if the booking is approved
+ *
+ * @param object $booking The booking object
+ * @return void
+ */
+function show_gate_code($booking) {
+    error_log('booking status: ' . $booking->status);
 
-    error_log($booking . " Received");
+    // Check if booking is approved (case insensitive comparison)
+    if (strtolower($booking->status) === 'approved') {
+        // Convert booking date to DateTime object
+        try {
+            $booking_date = new DateTime($booking->start_date);
+            $agent_id = intval($booking->agent_id);
+            $gate_code = generate_gate_code($agent_id, $booking_date);
 
-    if ($booking->status != 'approved') return;
-
-    $agent_id = $booking->agent_id ?? 0;
-
-    $gate_code = generate_gate_code($agent_id, $booking->start_datetime_utc);
-
-    echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
-    echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE ACCESS CODE</div>';
-    echo '<div style="font-weight: bold; color: #2d54de; font-size: 20px;">' . $gate_code . '</div>';
-    echo '</div>';
-});
-
-// Add gate code to calendar description but avoid interfering with other parameters
-add_filter('latepoint_build_add_to_calendar_link_params', function ($params, $booking) {
-//    error_log($booking . " Received with params " . print_r($params));
-
-    // Only proceed if we have valid parameters and booking
-    if (!is_array($params) || !isset($params['description']) || !is_object($booking)) {
-        return $params;
+            echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
+                echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE CODE</div>';
+                echo '<div style="font-weight: bold; color: #2d54de; font-size: 20px;">' . $gate_code . '</div>';
+            echo '</div>';
+        } catch (Exception $e) {
+            error_log('Error creating gate code: ' . $e->getMessage());
+        }
     }
+}
 
-    $agent_id = $booking->agent_id ?? 0;
-    $gate_code = generate_gate_code($agent_id, $booking->start_datetime_utc);
+// Add the hook correctly
+add_action('latepoint_booking_full_summary_before', 'show_gate_code', 10, 1);
 
-    // Safely append gate code to description
-    $params['description'] .= "\n\nGATE CODE: " . $gate_code;
 
-    return $params;
-}, 15, 2); // Lower priority (higher number) to run after other filters
-
-// Keep the footer display
-add_action('wp_footer', function () {
-    $gate_code = generate_gate_code(1, new DateTime());
-
-    echo '<div style="position: fixed; bottom: 10px; left: 10px; background: #fff; border: 2px solid #2d54de; padding: 15px; z-index: 9999; text-align: center;">';
-    echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE CODE</div>';
-    echo '<div style="color: #2d54de; font-size: 20px; font-weight: bold;">' . $gate_code . '</div>';
-    echo '</div>';
-});
+//// Add gate code only to a specific part of the summary
+//// Using a safer hook that comes later in the process
+//add_action('latepoint_booking_summary_after_summary_box', function ($booking) {
+//
+//    error_log($booking . " Received");
+//
+//    if ($booking->status != 'approved') return;
+//
+//    $agent_id = $booking->agent_id ?? 0;
+//
+//    $gate_code = generate_gate_code($agent_id, $booking->start_datetime_utc);
+//
+//    echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
+//    echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE ACCESS CODE</div>';
+//    echo '<div style="font-weight: bold; color: #2d54de; font-size: 20px;">' . $gate_code . '</div>';
+//    echo '</div>';
+//});
+//
+//
+//// Add gate code to calendar description but avoid interfering with other parameters
+//add_filter('latepoint_build_add_to_calendar_link_params', function ($params, $booking) {
+////    error_log($booking . " Received with params " . print_r($params));
+//
+//    // Only proceed if we have valid parameters and booking
+//    if (!is_array($params) || !isset($params['description']) || !is_object($booking)) {
+//        return $params;
+//    }
+//
+//    $agent_id = $booking->agent_id ?? 0;
+//    $gate_code = generate_gate_code($agent_id, $booking->start_datetime_utc);
+//
+//    // Safely append gate code to description
+//    $params['description'] .= "\n\nGATE CODE: " . $gate_code;
+//
+//    return $params;
+//}, 15, 2); // Lower priority (higher number) to run after other filters
+//
+//// Keep the footer display
+//add_action('wp_footer', function () {
+//    $gate_code = generate_gate_code(1, new DateTime());
+//
+//    echo '<div style="position: fixed; bottom: 10px; left: 10px; background: #fff; border: 2px solid #2d54de; padding: 15px; z-index: 9999; text-align: center;">';
+//    echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">GATE CODE</div>';
+//    echo '<div style="color: #2d54de; font-size: 20px; font-weight: bold;">' . $gate_code . '</div>';
+//    echo '</div>';
+//});
