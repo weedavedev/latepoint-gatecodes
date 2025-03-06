@@ -1,0 +1,108 @@
+/**
+ * LatePoint Gate Codes CSS
+ * Integrates with LatePoint styling while making gate codes prominent
+ */
+
+/* Main gate code container - integrates with LatePoint styling */
+.os-gate-code {
+    background-color: var(--latepoint-secondary-color-10, #f7f9fc);
+    border-radius: var(--latepoint-border-radius, 4px);
+    padding: 20px;
+    margin: 25px 0;
+    text-align: center;
+    border: 2px dashed var(--latepoint-main-color, #2d54de);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover effect */
+.os-gate-code:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Gate code label */
+.os-gate-code-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--latepoint-text-color-light, #6d6d6d);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+
+/* Gate code value - large and prominent */
+.os-gate-code-value {
+    font-family: var(--latepoint-heading-font, inherit);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--latepoint-main-color, #2d54de);
+    line-height: 1.2;
+    letter-spacing: 1px;
+}
+
+/* Email reminder styling */
+.os-gate-code-email-reminder {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: -2rem;
+    width: 100%;
+    background-color: rgba(45, 84, 222, 0.1);
+    padding: 8px 0;
+    color: var(--latepoint-main-color, #2d54de);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    transform: translateY(-100%);
+}
+
+.os-gate-code:hover .os-gate-code-email-reminder {
+    visibility: visible;
+    opacity: 1;
+    top: 0;
+    transform: translateY(0);
+}
+
+/* Multiple bookings variant */
+.os-gate-code-multiple .os-gate-code-value {
+    font-size: 22px;
+    color: var(--latepoint-color-warning, #f7b100);
+}
+
+/* Specific styling for the confirmation page */
+.step-confirmation-content .os-gate-code {
+    margin: 30px 0;
+    padding: 25px;
+}
+
+.step-confirmation-content .os-gate-code-value {
+    font-size: 42px;
+}
+
+/* Summary page styling */
+.booking-summary-panel .os-gate-code {
+    margin: 20px 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767px) {
+    .os-gate-code {
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .os-gate-code-value {
+        font-size: 28px;
+    }
+
+    .step-confirmation-content .os-gate-code-value {
+        font-size: 32px;
+    }
+}
