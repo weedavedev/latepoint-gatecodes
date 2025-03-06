@@ -26,34 +26,43 @@ function generate_gate_code($field, $date)
 }
 
 /**
- * Displays a gate code in the booking summary if the booking is approved
+ * Main handler function that determines what to do based on the confirmation object type
  *
- * @param object $booking The booking object
+ * @param mixed $confirmation Either an OsOrderModel or booking object
  * @return void
  */
-function show_gate_code($confirmation)
-{
-    //If the confirmation is an order of single booking, extract only booking
+function show_gate_code($confirmation) {
+    // Check if it's an order with multiple bookings
     if ($confirmation instanceof OsOrderModel) {
         $bookings = $confirmation->get_bookings_from_order_items();
 
         if (count($bookings) === 1) {
-            $booking = $bookings[0];
+            // Single booking in the order, use it
+            display_single_booking_gate_code($bookings[0]);
         } else if (count($bookings) > 1) {
-//            return message for multiple bookings
+            // Multiple bookings, show info message
             echo '<div style="margin-top: 15px; padding: 15px; background: #f7f9fc; border-radius: 4px; text-align: center;">';
-                echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">Multiple bookings found <br> Check individual bookings for separate gate codes</div>';
+            echo '<div style="color: #666; font-size: 12px; margin-bottom: 5px;">Multiple bookings found <br> Check individual bookings for separate gate codes</div>';
             echo '</div>';
-            return;
         }
+    } else {
+        // It's a single booking object
+        display_single_booking_gate_code($confirmation);
     }
+}
 
-    //procees with showing booking gatecode
-    error_log('booking status: ' . $booking->status);
+/**
+ * Displays gate code for a single booking if it's approved
+ *
+ * @param object $booking The booking object
+ * @return void
+ */
+function display_single_booking_gate_code($booking) {
+    // Debug log
+    error_log('Processing booking ID: ' . ($booking->id ?? 'unknown') . ', status: ' . ($booking->status ?? 'unknown'));
 
-    // Check if booking is approved (case insensitive comparison)
-    if (strtolower($booking->status) === 'aprooved') {
-        // Convert booking date to DateTime object
+    // Check if booking exists and is approved
+    if ($booking && strtolower($booking->status) === 'approved') { // Note: fixed spelling from 'aprooved' to 'approved'
         try {
             $booking_date = new DateTime($booking->start_date);
             $agent_id = intval($booking->agent_id);
@@ -68,6 +77,9 @@ function show_gate_code($confirmation)
         }
     }
 }
+
+// Add the hook
+add_action('latepoint_booking_full_summary_before', 'show_gate_code', 10, 1);
 
 // Add the hook correctly
 add_action('latepoint_booking_full_summary_before', 'show_gate_code', 10, 1);
