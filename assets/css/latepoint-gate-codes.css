@@ -47,16 +47,16 @@
     letter-spacing: 1px;
 }
 
-/* Email reminder styling */
+/* Email reminder styling - fixed color contrast issue */
 .os-gate-code-email-reminder {
     visibility: hidden;
     opacity: 0;
     position: absolute;
     top: -2rem;
     width: 100%;
-    background-color: rgba(45, 84, 222, 0.1);
+    background-color: rgba(45, 84, 222, 0.8);
     padding: 8px 0;
-    color: var(--latepoint-main-color, #2d54de);
+    color: #ffffff; /* Changed to white for better contrast */
     font-size: 13px;
     font-weight: 500;
     transition: all 0.3s ease;

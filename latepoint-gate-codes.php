@@ -6,6 +6,8 @@
  * Author: Wallace Development
  * Plugin URI: https://wallacedevelopment.co.uk
  * Text Domain: latepoint-gate-codes
+ * Requires at least: 5.0
+ * Requires PHP: 7.0
  */
 
 if (!defined('ABSPATH')) {
@@ -27,6 +29,11 @@ class LatePoint_Gate_Codes {
     const VERSION = '1.0.0';
 
     /**
+     * Debug mode
+     */
+    const DEBUG = false;
+
+    /**
      * Get plugin instance
      */
     public static function instance() {
@@ -40,6 +47,11 @@ class LatePoint_Gate_Codes {
      * Constructor
      */
     public function __construct() {
+        // Check if LatePoint is active
+        if (!$this->check_dependencies()) {
+            return;
+        }
+
         // Define constants
         $this->define_constants();
 
@@ -48,6 +60,28 @@ class LatePoint_Gate_Codes {
 
         // Actions and filters
         $this->init_hooks();
+    }
+
+    /**
+     * Check if LatePoint plugin is active
+     */
+    private function check_dependencies() {
+        if (!class_exists('OsOrderModel')) {
+            add_action('admin_notices', array($this, 'latepoint_missing_notice'));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Admin notice for missing LatePoint
+     */
+    public function latepoint_missing_notice() {
+        ?>
+        <div class="notice notice-error">
+            <p><?php _e('LatePoint Gate Codes addon requires the LatePoint plugin to be installed and activated.', 'latepoint-gate-codes'); ?></p>
+        </div>
+        <?php
     }
 
     /**
@@ -84,7 +118,7 @@ class LatePoint_Gate_Codes {
     public function register_styles() {
         wp_register_style(
             'latepoint-gate-codes-styles',
-            plugin_dir_url(__FILE__) . 'assets/css/latepoint-gate-codes.css',
+            LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css',
             array(),
             LATEPOINT_GATE_CODES_VERSION
         );
@@ -92,8 +126,10 @@ class LatePoint_Gate_Codes {
         // Enqueue on all pages where LatePoint might be used
         wp_enqueue_style('latepoint-gate-codes-styles');
 
-        // Debug - helps identify if the file is being found
-        error_log('LatePoint Gate Codes: Attempting to load CSS from: ' . plugin_dir_url(__FILE__) . 'assets/css/latepoint-gate-codes.css');
+        // Debug logging
+        if (self::DEBUG) {
+            error_log('LatePoint Gate Codes: Attempting to load CSS from: ' . LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css');
+        }
     }
 
     /**
@@ -115,8 +151,9 @@ class LatePoint_Gate_Codes {
             } else if (count($bookings) > 1) {
                 // Multiple bookings, show info message
                 echo '<div class="os-gate-code os-gate-code-multiple">';
-                echo '<div class="os-gate-code-label">GATE CODE</div>';
-                echo '<div class="os-gate-code-value">Multiple bookings found<br>Check individual bookings for separate gate codes</div>';
+                echo '<div class="os-gate-code-label">' . esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>';
+                echo '<div class="os-gate-code-value">' . esc_html__('Multiple bookings found', 'latepoint-gate-codes') .
+                    '<br>' . esc_html__('Check individual bookings for separate gate codes', 'latepoint-gate-codes') . '</div>';
                 echo '</div>';
             }
         } else {
@@ -139,12 +176,15 @@ class LatePoint_Gate_Codes {
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
 
                 echo '<div class="os-gate-code">';
-                    echo '<div class="os-gate-code-label">GATE CODE</div>';
-                    echo '<div class="os-gate-code-value">' . esc_html($gate_code) . '</div>';
-                    echo '<div class="os-gate-code-labels os-gate-code-email-reminder">Your gate code is also in an email confirmation!</div>';
+                echo '<div class="os-gate-code-label">' . esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>';
+                echo '<div class="os-gate-code-value">' . esc_html($gate_code) . '</div>';
+                echo '<div class="os-gate-code-email-reminder">' .
+                    esc_html__('Your gate code is also in an email confirmation!', 'latepoint-gate-codes') . '</div>';
                 echo '</div>';
             } catch (Exception $e) {
-                error_log('Error creating gate code: ' . $e->getMessage());
+                if (self::DEBUG) {
+                    error_log('Error creating gate code: ' . $e->getMessage());
+                }
             }
         }
     }

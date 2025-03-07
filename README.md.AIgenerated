@@ -1,0 +1,54 @@
+=== LatePoint Addon - Gate Codes ===
+Contributors: wallacedevelopment
+Tags: latepoint, booking, gate code
+Requires at least: 5.0
+Tested up to: 6.3
+Requires PHP: 7.0
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+Adds gate codes to LatePoint booking confirmations and summaries.
+
+== Description ==
+
+LatePoint Addon - Gate Codes enhances the LatePoint booking system by adding automatically generated gate codes to booking confirmations and summaries.
+
+= Features =
+* Automatically generates gate codes based on agent ID and booking week
+* Displays gate codes in booking confirmations
+* Shows gate codes in booking summaries
+* Handles single and multiple bookings
+* Mobile-friendly responsive design
+
+= Requirements =
+* WordPress 5.0 or higher
+* PHP 7.0 or higher
+* LatePoint plugin must be installed and activated
+
+== Installation ==
+
+1. Upload the `latepoint-gate-codes` folder to the `/wp-content/plugins/` directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. No configuration is needed - gate codes will automatically appear in booking confirmations and summaries
+
+== Frequently Asked Questions ==
+
+= How are gate codes generated? =
+Gate codes are generated using the agent ID and the week number of the booking date in the format #[agentID][agentID][weeknum].
+
+= Will gate codes appear for all bookings? =
+Gate codes will only appear for bookings with an 'approved' status.
+
+= Can I customize the gate code format? =
+The current version uses a fixed format. Future versions may include customization options.
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial release
+
+== Upgrade Notice ==
+
+= 1.0.0 =
+Initial version
