@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LatePoint Addon - Gate Codes
  * Description: LatePoint Addon that adds a gate code to booking summary and confirmations
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Wallace Development
  * Plugin URI: https://wallacedevelopment.co.uk
  * Text Domain: latepoint-gate-codes
@@ -26,7 +26,7 @@ class LatePoint_Gate_Codes {
     /**
      * Plugin version
      */
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
 
     /**
      * Debug mode
@@ -202,6 +202,26 @@ class LatePoint_Gate_Codes {
         }
         return "#" . $field . $field . sprintf("%02d", $date->format("W"));
     }
+
+    /**
+     * Public method to get a gate code from agent ID and date string
+     *
+     * @param int $agent_id The agent ID to use in the gate code
+     * @param string $date_string A date string that can be converted to DateTime
+     * @return string The formatted gate code
+     */
+    public function get_gate_code($agent_id, $date_string) {
+        try {
+            $agent_id = intval($agent_id);
+            $date = new DateTime($date_string);
+            return $this->generate_gate_code($agent_id, $date);
+        } catch (Exception $e) {
+            if (self::DEBUG) {
+                error_log('Error in get_gate_code: ' . $e->getMessage());
+            }
+            return "#ERR";
+        }
+    }
 }
 
 // Initialize the plugin
@@ -211,3 +231,16 @@ function LatePoint_Gate_Codes() {
 
 // Start the plugin
 add_action('plugins_loaded', 'LatePoint_Gate_Codes');
+
+/**
+ * Global function to get a gate code
+ * This allows the function to be called from anywhere without having to directly access the class instance
+ *
+ * @param int $agent_id The agent ID to use in the gate code
+ * @param string $date_string A date string that can be converted to DateTime
+ * @return string The formatted gate code
+ */
+function get_gate_code($agent_id, $date_string) {
+    $plugin = LatePoint_Gate_Codes();
+    return $plugin->get_gate_code($agent_id, $date_string);
+}
