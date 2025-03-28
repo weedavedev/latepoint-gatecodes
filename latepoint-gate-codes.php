@@ -104,7 +104,7 @@ class LatePoint_Gate_Codes {
     /**
      * Include required files
      */
-    private function includes() 
+    private function includes() {
         if (defined('WP_TESTS_DOMAIN') && WP_TESTS_DOMAIN){
             //Load test files only when running tests
             include_once LATEPOINT_GATE_CODES_PLUGIN_PATH . 'tests/test-gate-codes.php';
