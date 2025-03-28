@@ -64,10 +64,14 @@ class LatePoint_Gate_Codes {
 
     /**
      * Check if LatePoint plugin is active
+     *
+     * @return bool True is deps are met, false otherwise
+     * @since 1.0.0
      */
     private function check_dependencies() {
         if (!class_exists('OsOrderModel')) {
             add_action('admin_notices', array($this, 'latepoint_missing_notice'));
+            $this->log_error('Latepoint plugin is not active or installed');
             return false;
         }
         return true;
@@ -75,6 +79,8 @@ class LatePoint_Gate_Codes {
 
     /**
      * Admin notice for missing LatePoint
+     *
+     * @since 1.0.0
      */
     public function latepoint_missing_notice() {
         ?>
@@ -86,6 +92,8 @@ class LatePoint_Gate_Codes {
 
     /**
      * Define constants
+     * 
+     * @since 1.0.0
      */
     private function define_constants() {
         define('LATEPOINT_GATE_CODES_VERSION', self::VERSION);
@@ -96,12 +104,17 @@ class LatePoint_Gate_Codes {
     /**
      * Include required files
      */
-    private function includes() {
-        // No additional files needed for now, but can be added later
+    private function includes() 
+        if (defined('WP_TESTS_DOMAIN') && WP_TESTS_DOMAIN){
+            //Load test files only when running tests
+            include_once LATEPOINT_GATE_CODES_PLUGIN_PATH . 'tests/test-gate-codes.php';
+        }
     }
 
     /**
      * Initialize hooks
+     * 
+     * @since 1.0.0
      */
     private function init_hooks() {
         // Register styles
