@@ -1,0 +1,39 @@
+# Ignore tests directory
+/tests/
+
+# WordPress plugin specific ignores
+/node_modules/
+/vendor/
+/build/
+/dist/
+
+# Composer
+/composer.lock
+
+# npm/yarn
+/package-lock.json
+/yarn.lock
+/npm-debug.log
+
+# Environment files
+.env
+.env.*
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+.DS_Store
+
+# WordPress core test data
+/wordpress/
+/wp-content/
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*~
