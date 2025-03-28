@@ -186,7 +186,7 @@ class LatePoint_Gate_Codes {
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
                 #check if bookings has already passed
-                $booking_end_time = new DateTime($booking->end_date . ' ' $booking->end_time);
+                $booking_end_time = new DateTime($booking->end_date . ' ' . $booking->end_time);
                 $current_time = new DateTime();
 
                 #if booking appointment has ended then dont show gatecode
