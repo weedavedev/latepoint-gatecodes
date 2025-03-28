@@ -186,17 +186,24 @@ class LatePoint_Gate_Codes {
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
                 #check if bookings has already passed
-                $booking_end_time = new DateTime($booking->end_date . ' ' . $booking->end_time);
-                $current_time = new DateTime();
+                if (isset($booking->end_date) && isset($booking->end_time)) {
 
-                #if booking appointment has ended then dont show gatecode
-                if ($booking_end_time < $current_time) {
-                    if (self::DEBUG) {
-                        error_log('Gatecode not shown as booking has passed');
+                    $current_time = current_time('timestamp'); #use wordpress inbuild timestamp feature 
+
+                    $booking_end_time = strtotime($booking->end_date . ' ' . $booking->end_time);
+
+                    if ( self::DEBUG ) {
+                        error_log('booking data, end date = '. $booking->end_date . ' end time = ' . $booking->end_time);
                     }
-                    return;
+                    #if booking appointment has ended then dont show gatecode
+                    if ($booking_end_time < $current_time) {
+                        if (self::DEBUG) {
+                            error_log('Gatecode not shown as booking has passed');
+                        }
+                        return;
+                    }
                 }
-
+                
                 $booking_date = new DateTime($booking->start_date);
                 $agent_id = intval($booking->agent_id);
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
