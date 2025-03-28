@@ -4,7 +4,7 @@ Tags: latepoint, booking, gate code
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,7 @@ LatePoint Addon - Gate Codes enhances the LatePoint booking system by adding aut
 * Shows gate codes in booking summaries
 * Handles single and multiple bookings
 * Mobile-friendly responsive design
+* Print-friendly design
 
 = Requirements =
 * WordPress 5.0 or higher
@@ -43,7 +44,22 @@ Gate codes will only appear for bookings with an 'approved' status.
 = Can I customize the gate code format? =
 The current version uses a fixed format. Future versions may include customization options.
 
+= Is the gate code display optimized for different devices? =
+Yes, the gate code display is fully responsive and will adapt to desktop, tablet, and mobile screens.
+
+= Does the gate code work with print functionality? =
+Yes, the addon includes specific print styling to ensure gate codes are clearly visible when booking information is printed.
+
 == Changelog ==
+
+= 1.0.2 =
+* Improved error handling with better logging
+* Optimized CSS loading - now only loads on LatePoint pages
+* Added unit tests for gate code generation
+* Enhanced documentation throughout the codebase
+* Added print-friendly styling
+* Improved accessibility for screen readers
+* Better mobile responsiveness
 
 = 1.0.1 =
 * Bug fixes and performance improvements
@@ -52,6 +68,9 @@ The current version uses a fixed format. Future versions may include customizati
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Enhanced version with improved error handling, optimized CSS loading, better documentation, and print-friendly design
 
 = 1.0.1 =
 Updated version with bug fixes and performance improvements
