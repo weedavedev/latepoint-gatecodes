@@ -185,6 +185,18 @@ class LatePoint_Gate_Codes {
         // Check if booking exists and is approved
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
+                #check if bookings has already passed
+                $booking_end_time = new DateTime($booking->end_date . ' ' $booking->end_time);
+                $current_time = new DateTime();
+
+                #if booking appointment has ended then dont show gatecode
+                if ($booking_end_time < $current_time) {
+                    if (self::DEBUG) {
+                        error_log('Gatecode not shown as booking has passed');
+                    }
+                    return;
+                }
+
                 $booking_date = new DateTime($booking->start_date);
                 $agent_id = intval($booking->agent_id);
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
