@@ -79,8 +79,6 @@ class LatePoint_Gate_Codes {
 
     /**
      * Admin notice for missing LatePoint
-     *
-     * @since 1.0.0
      */
     public function latepoint_missing_notice() {
         ?>
@@ -104,8 +102,8 @@ class LatePoint_Gate_Codes {
     /**
      * Include required files
      */
-    private function includes() 
-        if (defined('WP_TESTS_DOMAIN') && WP_TESTS_DOMAIN){
+    private function includes() {
+        if (defined('WP_TESTS_DOMAIN') && WP_TESTS_DOMAIN) {
             //Load test files only when running tests
             include_once LATEPOINT_GATE_CODES_PLUGIN_PATH . 'tests/test-gate-codes.php';
         }
@@ -123,6 +121,9 @@ class LatePoint_Gate_Codes {
         // Add hooks for displaying gate codes
         add_action('latepoint_booking_full_summary_before', array($this, 'show_gate_code'), 10, 1);
         add_action('latepoint_step_confirmation_head_info_after', array($this, 'show_gate_code'), 10, 1);
+
+        //Email integration hooks
+        add_filter('latepoint_email_vars', array($this, 'add_gate_code_email_var'), 10, 3);
     }
 
     /**
@@ -235,6 +236,35 @@ class LatePoint_Gate_Codes {
             return "#ERR";
         }
     }
+
+    /**
+     * Add gate code variable to LatePoint email variables
+     * 
+     * @param array $vars Email template variables
+     * @param object $booking The booking object
+     * @param string $email_type Type of email being sent
+     * @return array Modified email template variables
+     */
+    public function add_gate_code_email_var($vars, $booking, $email_type) {
+        // Only add variable for customer-related emails
+        if (!empty($booking) && isset($booking->agent_id) && isset($booking->start_date)) {
+            // Add only for approved bookings
+            if (strtolower($booking->status) === 'approved') {
+                try {
+                    // Add gate code HTML
+                    $vars['gate_code_html'] = get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
+                    
+                    // Add plain gate code as well
+                    $vars['gate_code'] = $this->get_gate_code($booking->agent_id, $booking->start_date);
+                } catch (Exception $e) {
+                    if (self::DEBUG) {
+                        error_log('Error adding gate code to email: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
+        return $vars;
+    }
 }
 
 // Initialize the plugin
@@ -256,4 +286,33 @@ add_action('plugins_loaded', 'LatePoint_Gate_Codes');
 function get_gate_code($agent_id, $date_string) {
     $plugin = LatePoint_Gate_Codes();
     return $plugin->get_gate_code($agent_id, $date_string);
+}
+
+
+/**
+ * Generate HTML for gate code to be used in email templates
+ * 
+ * @param int $agent_id The agent ID to use in the gate code
+ * @param string $date_string A date string that can be converted to DateTime
+ * @param bool $return Whether to return or echo the HTML
+ * @return string|void HTML output if $return is true, otherwise echoes HTML
+ */
+function get_gate_code_email_html($agent_id, $date_string, $return = false) {
+    $plugin = LatePoint_Gate_Codes();
+    $gate_code = $plugin->get_gate_code($agent_id, $date_string);
+    
+    $html = '<div style="background-color: #f7f9fc; border-radius: 4px; padding: 20px; margin: 25px 0; ' .
+            'text-align: center; border: 2px dashed #2d54de; font-family: sans-serif;">' .
+            '<div style="font-size: 14px; font-weight: bold; color: #6d6d6d; text-transform: uppercase; ' .
+            'letter-spacing: 1.5px; margin-bottom: 10px;">' . 
+            esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>' .
+            '<div style="font-size: 32px; font-weight: 700; color: #2d54de; line-height: 1.2; ' .
+            'letter-spacing: 1px;">' . esc_html($gate_code) . '</div>' .
+            '</div>';
+    
+    if ($return) {
+        return $html;
+    }
+    
+    echo $html;
 }
