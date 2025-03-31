@@ -186,14 +186,13 @@ class LatePoint_Gate_Codes {
             try {
                 #check if bookings has already passed
                 if (isset($booking->end_date) && isset($booking->end_time)) {
-
                     $current_time = current_time('timestamp'); #use wordpress inbuild timestamp feature 
-
                     $booking_end_time = strtotime($booking->end_date . ' ' . $booking->end_time);
 
                     if ( self::DEBUG ) {
-                        error_log('booking data, end date = '. $booking->end_date . ' end time = ' . $booking->end_time);
+                        error_log('Gatecode booking data, end date = '. $booking->end_date . ' end time = ' . $booking->end_time);
                     }
+                    
                     #if booking appointment has ended then dont show gatecode
                     if ($booking_end_time < $current_time) {
                         if (self::DEBUG) {
@@ -203,7 +202,7 @@ class LatePoint_Gate_Codes {
                     }
                 } else {
                     if (self::DEBUG) {
-                        error_log('Latepoint gatecodes missing end date err: '.print_r($booking, true));
+                        error_log('Latepoint Gatecodes missing end date err: '.print_r($booking, true));
                     }
                 }
                 
