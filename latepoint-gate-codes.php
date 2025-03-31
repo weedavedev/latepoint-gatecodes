@@ -31,7 +31,7 @@ class LatePoint_Gate_Codes {
     /**
      * Debug mode
      */
-    const DEBUG = false;
+    const DEBUG = true;
 
     /**
      * Get plugin instance
@@ -184,6 +184,29 @@ class LatePoint_Gate_Codes {
         // Check if booking exists and is approved
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
+                #check if bookings has already passed
+                if (isset($booking->end_date) && isset($booking->end_time)) {
+
+                    $current_time = current_time('timestamp'); #use wordpress inbuild timestamp feature 
+
+                    $booking_end_time = strtotime($booking->end_date . ' ' . $booking->end_time);
+
+                    if ( self::DEBUG ) {
+                        error_log('booking data, end date = '. $booking->end_date . ' end time = ' . $booking->end_time);
+                    }
+                    #if booking appointment has ended then dont show gatecode
+                    if ($booking_end_time < $current_time) {
+                        if (self::DEBUG) {
+                            error_log('Gatecode not shown as booking has passed');
+                        }
+                        return;
+                    }
+                } else {
+                    if (self::DEBUG) {
+                        error_log('Latepoint gatecodes missing end date err: '.print_r($booking, true));
+                    }
+                }
+                
                 $booking_date = new DateTime($booking->start_date);
                 $agent_id = intval($booking->agent_id);
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
@@ -198,6 +221,10 @@ class LatePoint_Gate_Codes {
                 if (self::DEBUG) {
                     error_log('Error creating gate code: ' . $e->getMessage());
                 }
+            }
+        } else {
+            if (self::DEBUG) {
+                error_log('Latepoint gatecodes missing end date err: '.print_r($booking, true));
             }
         }
     }
