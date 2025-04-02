@@ -31,7 +31,7 @@ class LatePoint_Gate_Codes {
     /**
      * Debug mode
      */
-#    const DEBUG = false;
+    const DEBUG = false;
 
     /**
      * Get plugin instance
@@ -318,6 +318,15 @@ class LatePoint_Gate_Codes {
         return $vars;
     }
     
+
+    /**
+     * Generate HTML for gate code to be used in email templates
+     * 
+     * @param int $agent_id The agent ID to use in the gate code
+     * @param string $date_string A date string that can be converted to DateTime
+     * @param bool $return Whether to return or echo the HTML
+     * @return string|void HTML output if $return is true, otherwise echoes HTML
+     */
     function get_gate_code_email_html($agent_id, $date_string, $return = false) {
         $plugin = LatePoint_Gate_Codes();
         $gate_code = $plugin->get_gate_code($agent_id, $date_string);
@@ -360,11 +369,3 @@ function get_gate_code($agent_id, $date_string) {
     return $plugin->get_gate_code($agent_id, $date_string);
 }
 
-/**
- * Generate HTML for gate code to be used in email templates
- * 
- * @param int $agent_id The agent ID to use in the gate code
- * @param string $date_string A date string that can be converted to DateTime
- * @param bool $return Whether to return or echo the HTML
- * @return string|void HTML output if $return is true, otherwise echoes HTML
- */
