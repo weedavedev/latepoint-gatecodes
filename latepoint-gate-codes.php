@@ -69,10 +69,21 @@ class LatePoint_Gate_Codes {
     private function check_dependencies() {
         if (!class_exists('OsOrderModel')) {
             add_action('admin_notices', array($this, 'latepoint_missing_notice'));
-            $this->log_error('Latepoint plugin is not active or installed');
+            $this->log_debug('Latepoint plugin is not active or installed');
             return false;
         }
         return true;
+    }
+
+    /**
+     * Log debug message if debug is enabled
+     *
+     * @param string $message Message to log
+     */
+    private function log_debug($message) {
+        if (self::DEBUG) {
+            error_log('LATEPOINT_GATECODES: ' . $message);
+        }
     }
 
     /**
@@ -118,7 +129,7 @@ class LatePoint_Gate_Codes {
         add_action('latepoint_booking_full_summary_before', array($this, 'show_gate_code'), 10, 1);
         add_action('latepoint_step_confirmation_head_info_after', array($this, 'show_gate_code'), 10, 1);
 
-        //Email integration hooks
+        // Email integration hooks - uncomment when fixed
         add_filter('latepoint_email_vars', array($this, 'add_gate_code_email_var'), 10, 3);
         add_filter('latepoint_email_vars_list', array($this, 'add_gate_code_email_vars_to_list'), 10, 1);
     }
@@ -159,9 +170,7 @@ class LatePoint_Gate_Codes {
         wp_enqueue_style('latepoint-gate-codes-styles');
 
         // Debug logging
-        if (self::DEBUG) {
-            error_log('LatePoint Gate Codes: Attempting to load CSS from: ' . LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css');
-        }
+        $this->log_debug('Attempting to load CSS from: ' . LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css');
     }
 
     /**
@@ -203,37 +212,43 @@ class LatePoint_Gate_Codes {
         // Check if booking exists and is approved
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
-                #check if booking is for the current day
+                // Check if booking is for the current day
                 if (isset($booking->start_date)) {
-                    $current_date = current_time('Y-m-d'); #use WordPress inbuilt timestamp feature
-                    $booking_date = $booking->start_date;
-
-                    #calc days different 
-                    $days_diff = (int)$booking_date->diff($current_date)->format('%r%a');
-
-                    if ( self::DEBUG ) {
-                        error_log('Gatecode booking data, start date = '. $booking_date . ' current date = ' . $current_date);
-                    }
+                    // Get current date as DateTime object
+                    $current_date = new DateTime(current_time('Y-m-d'));
                     
-                    #only show gate code if booking is on the current day
-                    if (!$days_diff > 0 && $days_diff > 2) {
-                        if (self::DEBUG) {
-                            if ($days_diff < 0 ) {
-                                error_log('Not showing code as its a past booking');
-                            } else {
-                                error_log('Not showing code as its to far in future, see email');
-                            }
+                    // Make sure booking date is also a DateTime object
+                    $booking_date = null;
+                    if ($booking->start_date instanceof DateTime) {
+                        $booking_date = $booking->start_date;
+                    } else {
+                        // If it's a string, convert it
+                        $booking_date = new DateTime($booking->start_date);
+                    }
+
+                    // Calculate days difference
+                    $days_diff = (int)$current_date->diff($booking_date)->format('%r%a');
+
+                    $this->log_debug('Booking data - Start date: ' . $booking_date->format('Y-m-d') . 
+                                    ' Current date: ' . $current_date->format('Y-m-d') . 
+                                    ' Days difference: ' . $days_diff);
+                    
+                    // Only show gate code if booking is within 2 days (past or future)
+                    // FIXED LOGIC: If days_diff < -2 (more than 2 days in the past) OR days_diff > 2 (more than 2 days in the future)
+                    if ($days_diff < -2 || $days_diff > 2) {
+                        if ($days_diff < 0) {
+                            $this->log_debug('Not showing code as it\'s a past booking (more than 2 days ago)');
+                        } else {
+                            $this->log_debug('Not showing code as it\'s too far in future, see email');
                         }
-                        return; #return to jump out, and not show code
+                        return; // Return to jump out, and not show code
                     }
 
                 } else {
-                    if (self::DEBUG) {
-                        error_log('Latepoint Gatecodes missing start date err: '.print_r($booking, true));
-                    }
+                    $this->log_debug('Missing start date: ' . print_r($booking, true));
+                    return;
                 }
                 
-                $booking_date = new DateTime($booking->start_date);
                 $agent_id = intval($booking->agent_id);
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
 
@@ -244,14 +259,10 @@ class LatePoint_Gate_Codes {
                     esc_html__('Your gate code is also in an email confirmation!', 'latepoint-gate-codes') . '</div>';
                 echo '</div>';
             } catch (Exception $e) {
-                if (self::DEBUG) {
-                    error_log('Error creating gate code: ' . $e->getMessage());
-                }
+                $this->log_debug('Error creating gate code: ' . $e->getMessage());
             }
         } else {
-            if (self::DEBUG) {
-                error_log('Latepoint gatecodes missing end date err: '.print_r($booking, true));
-            }
+            $this->log_debug('Not an approved booking or missing booking data: ' . print_r($booking, true));
         }
     }
 
@@ -282,9 +293,7 @@ class LatePoint_Gate_Codes {
             $date = new DateTime($date_string);
             return $this->generate_gate_code($agent_id, $date);
         } catch (Exception $e) {
-            if (self::DEBUG) {
-                error_log('Error in get_gate_code: ' . $e->getMessage());
-            }
+            $this->log_debug('Error in get_gate_code: ' . $e->getMessage());
             return "#ERR";
         }
     }
@@ -298,42 +307,43 @@ class LatePoint_Gate_Codes {
      * @return array Modified email template variables
      */
     public function add_gate_code_email_var($vars, $booking, $email_type) {
-        error_log(print_r($booking));
+        $this->log_debug('Processing email variables for booking: ' . (is_object($booking) ? 'yes' : 'no'));
+        
         // Only add variable for customer-related emails
         if (!empty($booking) && isset($booking->agent_id) && isset($booking->start_date)) {
             // Add only for approved bookings
             if (strtolower($booking->status) === 'approved') {
-                if (self::DEBUG) {
-                    error_log('Adding gatecode email var for bookings ' . print_r($booking, true));
-                    error_log('Agent ID: ' . $booking->agent_id . ', Start date: ' . $booking->start_date);
-                }
+                $this->log_debug('Adding gate code email var for booking. Agent ID: ' . $booking->agent_id . 
+                                ', Start date: ' . (is_object($booking->start_date) ? $booking->start_date->format('Y-m-d') : $booking->start_date));
+                
                 try {
-                    // Add gate code HTML
+                    // Add gate code HTML - FIXED: use $this-> instead of global function
                     $vars['gate_code_html'] = $this->get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
                     
                     // Add plain gate code as well
                     $vars['gate_code'] = $this->get_gate_code($booking->agent_id, $booking->start_date);
                 } catch (Exception $e) {
-                    if (self::DEBUG) {
-                        error_log('Error adding gate code to email: ' . $e->getMessage());
-                    }
+                    $this->log_debug('Error adding gate code to email: ' . $e->getMessage());
                 }
             }
         }
         return $vars;
     }
-    
 
     /**
      * Generate HTML for gate code to be used in email templates
      * 
      * @param int $agent_id The agent ID to use in the gate code
-     * @param string $date_string A date string that can be converted to DateTime
+     * @param string|DateTime $date_string A date string or DateTime object
      * @param bool $return Whether to return or echo the HTML
      * @return string|void HTML output if $return is true, otherwise echoes HTML
      */
     public function get_gate_code_email_html($agent_id, $date_string, $return = false) {
-        #$plugin = LatePoint_Gate_Codes();
+        // Convert to string if it's a DateTime object
+        if ($date_string instanceof DateTime) {
+            $date_string = $date_string->format('Y-m-d');
+        }
+        
         $gate_code = $this->get_gate_code($agent_id, $date_string);
         
         $html = '<div style="background-color: #f7f9fc; border-radius: 4px; padding: 20px; margin: 25px 0; ' .
@@ -374,3 +384,16 @@ function get_gate_code($agent_id, $date_string) {
     return $plugin->get_gate_code($agent_id, $date_string);
 }
 
+/**
+ * Global function to get HTML for gate code
+ * This allows the function to be called from anywhere without having to directly access the class instance
+ *
+ * @param int $agent_id The agent ID to use in the gate code
+ * @param string $date_string A date string that can be converted to DateTime
+ * @param bool $return Whether to return or echo the HTML
+ * @return string|void HTML output if $return is true, otherwise echoes HTML
+ */
+function get_gate_code_email_html($agent_id, $date_string, $return = false) {
+    $plugin = LatePoint_Gate_Codes();
+    return $plugin->get_gate_code_email_html($agent_id, $date_string, $return);
+}
