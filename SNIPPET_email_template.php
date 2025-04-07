@@ -1,5 +1,3 @@
-<?php
-
 function email_template($field_name, $date, $gate_code, $num_dogs) {
     // Start with responsive email template
     $body = '<!doctype html>
@@ -60,7 +58,6 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
         
         /* Typography */
         h1 {
-            color: #2d54de;
             font-size: 28px;
             font-weight: 700;
             text-align: center;
@@ -177,6 +174,10 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
         
         /* Mobile responsiveness */
         @media only screen and (max-width: 620px) {
+            .booking-details td {
+                text-align: center;
+            }
+            
             .container {
                 width: 100% !important;
                 padding: 10px !important;
@@ -226,7 +227,7 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
                         <tr>
                             <td class="wrapper" align="center">
                                 <img src="https://staging.letthedogsrun.uk/wp-content/uploads/2023/07/main-desktop-logo-1024x575.png" alt="Let The Dogs Run" style="max-width: 280px; height: auto; margin: 0 auto;" />
-                                <h1>Booking Confirmation</h1>
+                                <h1>Welcome to Let The Dogs Run!</h1>
                             </td>
                         </tr>
                     </table>
@@ -240,7 +241,7 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
                                 <!-- BOOKING DETAILS TABLE -->
                                 <table class="booking-details" width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                        <th width="40%">Area</th>
+                                        <th width="40%">Field</th>
                                         <td width="60%">'.$field_name.'</td>
                                     </tr>
                                     <tr>
@@ -250,10 +251,6 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
                                     <tr>
                                         <th>Time</th>
                                         <td>'.$date->format("H:i").' - '.$date->add(new DateInterval("PT1H"))->format("H:i").'</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Duration</th>
-                                        <td>1 Hour (private hire)</td>
                                     </tr>
                                     <tr>
                                         <th>Number of Dogs</th>
@@ -267,9 +264,11 @@ function email_template($field_name, $date, $gate_code, $num_dogs) {
                                     <div class="gate-code-value">'.$gate_code.'</div>
                                 </div>
                                 
+                                <p>All booking details can be found on our website, under the <a href="https://www.letthedogsrun.uk/my-account">My account</a> page</p>
+                                
                                 <p>At Let The Dogs Run, our ethos is to offer a safe and enriching environment for owners and dogs alike to exercise and enjoy each other\'s company.</p>
                                 
-                                <p>Any problems, queries or concerns please <a href="https://staging.letthedogsrun.uk/contact-us">contact Wendy</a> on <a href="tel:07950020820">07950020820</a>.</p>
+                                <p>Any problems, queries or concerns please <a href="https://www.letthedogsrun.uk/contact-us">contact Wendy</a> on <a href="tel:07950020820">07950020820</a>.</p>
                                 
                                 <p>We thank you in advance for respecting our facility and we do hope you all have a fantastic time at Let The Dogs Run!</p>
                                 

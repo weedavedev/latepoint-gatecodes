@@ -59,22 +59,23 @@ function send_gate_code($booking){
 	$subject = 'LTDR - Booking confirmation '.$date->format("d/m/y"). " : #".$booking->booking_code;
 	
 
-    if(is_gate_code_working()){
+    if(is_gate_code_plugin_avaliable()){
         try {
             
             //get gate code from function
-            $gate_code = get_gate_code($booking->agent_id, $booking->start_datetime_utc);
+            $plugin = LatePoint_Gate_codes();
+            $gate_code = $plugin->get_gate_code($booking->agent_id, $booking->start_datetime_utc);
             if($gate_code = "#ERR" || emtpy($gate_code) ){
-                $gate_code = "Code error: Check your My Account page within 2 days of your booking to reveal code."     
+                $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code.";     
                 error_log('LATEPOINT_GATECODES: Email template, getcode error. ' . $booking->booking_code);
             }
         }catch (Exception $e) {
-            $gate_code = "Code error: Check your My Account page within 2 days of your booking to reveal code."     
+            $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code.";     
             error_log('LATEPOINT_GATECODES: Gatecode exception ' $e->getMessage());
         }
         
     } else {
-        $gate_code = "Code error: Check your My Account page within 2 days of your booking to reveal code."     
+        $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code."     
         error_log('LATEPOINT_GATECODES: Gatecode plugin not active');
     }
 
