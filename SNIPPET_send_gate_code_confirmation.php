@@ -1,4 +1,8 @@
 <?php
+/*
+ * This code is avaliable and stored in a repo where the original gatecode plugin is saved. In future we will get the email finctionality integrated into latepoint smoothly :D 
+ * 
+ */
 
 function is_gate_code_plugin_available(){
 	if(!class_exists('LatePoint_Gate_Codes')){

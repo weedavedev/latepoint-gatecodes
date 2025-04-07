@@ -1,3 +1,8 @@
+<?php 
+/*
+ * This code is avaliable and stored in a repo where the original gatecode plugin is saved. In future we will get the email finctionality integrated into latepoint smoothly :D 
+ * 
+ */
 function email_template($field_name, $date, $gate_code, $num_dogs) {
     // Start with responsive email template
     $body = '<!doctype html>
