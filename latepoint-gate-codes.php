@@ -304,7 +304,7 @@ class LatePoint_Gate_Codes {
             if (strtolower($booking->status) === 'approved') {
                 try {
                     // Add gate code HTML
-                    $vars['gate_code_html'] = get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
+                    $vars['gate_code_html'] = $this->get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
                     
                     // Add plain gate code as well
                     $vars['gate_code'] = $this->get_gate_code($booking->agent_id, $booking->start_date);
@@ -327,7 +327,7 @@ class LatePoint_Gate_Codes {
      * @param bool $return Whether to return or echo the HTML
      * @return string|void HTML output if $return is true, otherwise echoes HTML
      */
-    function get_gate_code_email_html($agent_id, $date_string, $return = false) {
+    public function get_gate_code_email_html($agent_id, $date_string, $return = false) {
         $plugin = LatePoint_Gate_Codes();
         $gate_code = $plugin->get_gate_code($agent_id, $date_string);
         
