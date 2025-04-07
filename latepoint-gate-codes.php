@@ -31,7 +31,7 @@ class LatePoint_Gate_Codes {
     /**
      * Debug mode
      */
-    const DEBUG = false;
+    const DEBUG = true;
 
     /**
      * Get plugin instance
@@ -298,10 +298,15 @@ class LatePoint_Gate_Codes {
      * @return array Modified email template variables
      */
     public function add_gate_code_email_var($vars, $booking, $email_type) {
+        error_log(print_r($booking));
         // Only add variable for customer-related emails
         if (!empty($booking) && isset($booking->agent_id) && isset($booking->start_date)) {
             // Add only for approved bookings
             if (strtolower($booking->status) === 'approved') {
+                if (self::DEBUG) {
+                    error_log('Adding gatecode email var for bookings ' . print_r($booking, true));
+                    error_log('Agent ID: ' . $booking->agent_id . ', Start date: ' . $booking->start_date);
+                }
                 try {
                     // Add gate code HTML
                     $vars['gate_code_html'] = $this->get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
@@ -328,8 +333,8 @@ class LatePoint_Gate_Codes {
      * @return string|void HTML output if $return is true, otherwise echoes HTML
      */
     public function get_gate_code_email_html($agent_id, $date_string, $return = false) {
-        $plugin = LatePoint_Gate_Codes();
-        $gate_code = $plugin->get_gate_code($agent_id, $date_string);
+        #$plugin = LatePoint_Gate_Codes();
+        $gate_code = $this->get_gate_code($agent_id, $date_string);
         
         $html = '<div style="background-color: #f7f9fc; border-radius: 4px; padding: 20px; margin: 25px 0; ' .
                 'text-align: center; border: 2px dashed #2d54de; font-family: sans-serif;">' .
