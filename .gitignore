@@ -50,3 +50,6 @@ Thumbs.db
 *.bak
 *~
 *.tmp
+email_preview.html
+email_template_old.html
+latepoint-gate-codes.zip
