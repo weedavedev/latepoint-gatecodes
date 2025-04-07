@@ -111,10 +111,6 @@ class LatePoint_Gate_Codes {
      * Include required files
      */
     private function includes() {
-     #   if (defined('WP_TESTS_DOMAIN') && WP_TESTS_DOMAIN) {
-       #     //Load test files only when running tests
-         #   include_once LATEPOINT_GATE_CODES_PLUGIN_PATH . 'tests/test-gate-codes.php';
-        #}
     }
 
     /**
@@ -128,32 +124,8 @@ class LatePoint_Gate_Codes {
         // Add hooks for displaying gate codes
         add_action('latepoint_booking_full_summary_before', array($this, 'show_gate_code'), 10, 1);
         add_action('latepoint_step_confirmation_head_info_after', array($this, 'show_gate_code'), 10, 1);
-
-        // Email integration hooks - uncomment when fixed
-        add_filter('latepoint_email_vars', array($this, 'add_gate_code_email_var'), 10, 3);
-        add_filter('latepoint_email_vars_list', array($this, 'add_gate_code_email_vars_to_list'), 10, 1);
     }
     
-    /**
-     * Add gate code variables to the list of available email variables
-     * 
-     * @param array $vars List of available email variables
-     * @return array Modified list of email variables
-     */
-    public function add_gate_code_email_vars_to_list($vars) {
-        // Add our custom variables to the list
-        $vars[] = [
-            'name' => 'gate_code',
-            'description' => __('Gate code for the booking (text only)', 'latepoint-gate-codes')
-        ];
-        
-        $vars[] = [
-            'name' => 'gate_code_html',
-            'description' => __('Gate code for the booking (styled HTML block)', 'latepoint-gate-codes')
-        ];
-        
-        return $vars;
-    }
     /**
      * Register and enqueue styles
      *
@@ -296,38 +268,6 @@ class LatePoint_Gate_Codes {
             $this->log_debug('Error in get_gate_code: ' . $e->getMessage());
             return "#ERR";
         }
-    }
-
-    /**
-     * Add gate code variable to LatePoint email variables
-     * 
-     * @param array $vars Email template variables
-     * @param object $booking The booking object
-     * @param string $email_type Type of email being sent
-     * @return array Modified email template variables
-     */
-    public function add_gate_code_email_var($vars, $booking, $email_type) {
-        $this->log_debug('Processing email variables for booking: ' . (is_object($booking) ? 'yes' : 'no'));
-        
-        // Only add variable for customer-related emails
-        if (!empty($booking) && isset($booking->agent_id) && isset($booking->start_date)) {
-            // Add only for approved bookings
-            if (strtolower($booking->status) === 'approved') {
-                $this->log_debug('Adding gate code email var for booking. Agent ID: ' . $booking->agent_id . 
-                                ', Start date: ' . (is_object($booking->start_date) ? $booking->start_date->format('Y-m-d') : $booking->start_date));
-                
-                try {
-                    // Add gate code HTML - FIXED: use $this-> instead of global function
-                    $vars['gate_code_html'] = $this->get_gate_code_email_html($booking->agent_id, $booking->start_date, true);
-                    
-                    // Add plain gate code as well
-                    $vars['gate_code'] = $this->get_gate_code($booking->agent_id, $booking->start_date);
-                } catch (Exception $e) {
-                    $this->log_debug('Error adding gate code to email: ' . $e->getMessage());
-                }
-            }
-        }
-        return $vars;
     }
 
     /**
