@@ -31,19 +31,37 @@ PLUGIN_DIR="$TMP_DIR/$PLUGIN_SLUG"
 mkdir -p "$PLUGIN_DIR"
 
 #copy file to temp directory ready for conversion and mutilation.
-for file in "${FILES}"; do
-    cp "${file}" "$PLUGIN_DIR" 2>/dev/null || :
+echo "Copying file to tmp directory"
+
+for file in "${FILES[@]}"; do
+    # create sub directories if required 
+    dir=$(dirname "$file")
+    if [ "$dir" != "." ]; then 
+        mkdir -p "$PLUGIN_DIR/$dir"
+    fi
+
+    cp "${file}" "$PLUGIN_DIR/$file"
+    echo -e "${BLUE}Copied ${file} to $PLUGIN_DIR/$file...${NC}"
 done
 
 #START OF POTENTIAL TASKS TO DO IN TMP directory
 ################################################
 
 #1. Set DEBUG = false 
+echo -e "${BLUE}Debug mode set to false${NC}"
 sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$PLUGIN_DIR/$MAIN_FILE" 
 
 #10. zip all tmp files into zip directory
 #swap to tmp direcotyr and zip stuff up then moving it into the .zip
 (cd "$TMP_DIR" && zip -r "../$PLUGIN_SLUG.zip" "$PLUGIN_SLUG")
+# Check if zip was created successfully
+if [ -f "$PLUGIN_SLUG.zip" ]; then
+    # List the contents of the zip to verify
+    echo -e "${GREEN}ZIP created successfully. Contents:${NC}"
+    unzip -l "$PLUGIN_SLUG.zip"
+else
+    echo -e "${RED}Failed to create ZIP file${NC}"
+fi
 #remove tmp dir to save memory
 rm -rf "$TMP_DIR"
 
