@@ -1,8 +1,6 @@
 <?php
-/*
- * @return bool true if plugin is active, 
- */
-function is_gate_code_plugin_avaliable(){
+
+function is_gate_code_plugin_available(){
 	if(!class_exists('LatePoint_Gate_Codes')){
 		return false;
 	}
@@ -59,23 +57,21 @@ function send_gate_code($booking){
 	$subject = 'LTDR - Booking confirmation '.$date->format("d/m/y"). " : #".$booking->booking_code;
 	
 
-    if(is_gate_code_plugin_avaliable()){
+    if(is_gate_code_plugin_available()){
         try {
-            
             //get gate code from function
-            $plugin = LatePoint_Gate_codes();
+            $plugin = LatePoint_Gate_Codes();
             $gate_code = $plugin->get_gate_code($booking->agent_id, $booking->start_datetime_utc);
-            if($gate_code = "#ERR" || emtpy($gate_code) ){
+            if($gate_code == "#ERR" || empty($gate_code) ){
                 $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code.";     
                 error_log('LATEPOINT_GATECODES: Email template, getcode error. ' . $booking->booking_code);
             }
         }catch (Exception $e) {
             $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code.";     
-            error_log('LATEPOINT_GATECODES: Gatecode exception ' $e->getMessage());
+            error_log('LATEPOINT_GATECODES: Gatecode exception ' . $e->getMessage());
         }
-        
     } else {
-        $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code."     
+        $gate_code = "Code error: You can now check your My Account page within 2 days of your booking to reveal code.";
         error_log('LATEPOINT_GATECODES: Gatecode plugin not active');
     }
 
@@ -89,6 +85,10 @@ function send_gate_code($booking){
 	//send mail
 	//$check = wp_mail( $to, $subject,'test'.$gate_code, $headers );
 	$check = wp_mail( $to, $subject, $body, $headers );
+
+    if(!check) { 
+        error_log('LATEPOINT_GATECODES: Failed to send email for booking' . $booking->booking_code);
+    }
 }
 
 //tag onto action hook thats generated after the booking has been confirmed
