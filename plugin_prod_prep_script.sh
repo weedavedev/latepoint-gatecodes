@@ -63,6 +63,7 @@ else
     echo -e "${RED}Failed to create ZIP file${NC}"
 fi
 
+#11. Remove extra files
 #remove tmp dir to save memory
 rm -rf "$TMP_DIR"
 if [ -f "$PLUGIN_SLUG.zip" ]; then
@@ -70,3 +71,6 @@ if [ -f "$PLUGIN_SLUG.zip" ]; then
 else 
     echo -e "${GREEN}Removed TMP directory${NC}"
 fi
+
+#12. Exit
+echo "Thanks for flying with us today..."
