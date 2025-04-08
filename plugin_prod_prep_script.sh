@@ -62,8 +62,11 @@ if [ -f "$PLUGIN_SLUG.zip" ]; then
 else
     echo -e "${RED}Failed to create ZIP file${NC}"
 fi
+
 #remove tmp dir to save memory
 rm -rf "$TMP_DIR"
-
-#echo the sucess of getting this far
-echo -e "${GREEN}ZIP CReated sucessfully ${NC}"
+if [ -f "$PLUGIN_SLUG.zip" ]; then
+    echo -e "${RED}Failed to delete ${PLUGIN_SLUG}${NC}"
+else 
+    echo -e "${GREEN}Removed TMP directory${NC}"
+fi
