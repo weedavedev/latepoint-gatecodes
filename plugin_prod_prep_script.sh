@@ -68,7 +68,7 @@ echo -e "${GREEN}Finished copying files${NC}"
 # 1. Check php source code
 echo "-- Checking PHP sytax..."
 if command -v php > /dev/null; then
-    PHPSYNTAX=$(php -l "$MAIN_FILE" 2>&1)
+    PHP_SYNTAX=$(php -l "$MAIN_FILE" 2>&1)
     if [[ $PHP_SYNTAX == *"No syntax errors detected"* ]]; then
         echo -e "${GREEN}PHP syntax is valid${NC}"
     else 
@@ -79,6 +79,7 @@ else
 fi
         
 # 2. Update Version Number 
+# First get verison number in main file
 CURR_VERSION=$(grep -oP "Version: \K[0-9]+\.[0-9]+\.[0-9]+" "$MAIN_FILE")
 if [ -z "$CURR_VERSION" ]; then
     CURR_VERSION=$(grep -oP "const VERSION = '\K[0-9]+\.[0-9]+\.[0-9]+'" "$MAIN_FILE" | tr -d "'")
@@ -89,8 +90,26 @@ fi
 
 read -e -p "($CURR_VERSION) found, enter new number? " -i "$CURR_VERSION" RELEASE_VERSION
 # 
-# How about a quick git commit here before editing files? 
+#2.1 git commit to save changes
+
+if command -v git /dev/null && [ -d ".git" ]; then
+    read -p "Commit changes to repo? (Y/G/n) [G to exit and commit maually] " GIT_COMMIT
+    if [[ "GIT_COMMIT" == "G" ]]; then
+        exit 1 #exit to allow more control over git
+    fi
+
+    #show current git status before comfirming basic commit
+    git status
+    read -p "Confirm 'git commit -am Bumper commit version to $RELEASE_VERSION' command (Y/n)" GIT_COMMIT
+    if [[ "$GIT_COMMIT" == "Y" ]]; then
+        git add . 
+        git commit -m "Bumper commit version to $RELEASE_VERSION"
+        echo -e "${GREEN}Changes committed to Git${NC}"
+    fi
+fi
+        
 #
+#then update the file in locations
 if [ -z "$RELEASE_VERSION" ]; then
     RELEASE_VERSION=$CURR_VERSION
     echo -e "${BLUE}Using current version (${RELEASE_VERSION})${NC}"
@@ -99,7 +118,7 @@ else
     
     read -p "Update both zip and source? (Y/(S)ource/(Z)ip/N)" UPDATE_LIST
     UPDATE_LIST="${UPDATE_LIST^^}"  # Convert to uppercase
-    CURRENT_DIR="$(pwd)"
+    CURRENT_DIR="$(pwd)"    #set current directory
 
     # Update source file if requested
     if [[ "$UPDATE_LIST" == "Y" || "$UPDATE_LIST" == "S" ]]; then
@@ -111,13 +130,12 @@ else
         update_version_in_file "${TMP_PLUGIN_DIR}/${MAIN_FILE}" "$CURR_VERSION" "$RELEASE_VERSION" "Zip"
     fi
 fi
-exit 1
 #add README_VER checks as well
 
 # 2. Set DEBUG = false 
 echo "-- Setting debug mode to false"
 sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$TMP_PLUGIN_DIR/$MAIN_FILE" 
-if [ "$(grep -c "DEBUG = true" "$TMP_PLUGIN_DIR/$MAIN_FILE")" -ne 0 ]; then
+if grep -q "const DEBUG = true" "$TMP_PLUGIN_DIR/$MAIN_FILE"; then
     echo -e "${RED}Failed to set debug = false${NC}"
 else
     echo -e "${GREEN}DEBUG = FALSE${NC}"
