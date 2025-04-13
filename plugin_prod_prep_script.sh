@@ -199,7 +199,7 @@ remove_tmp_dir() {
         return 0
     else
         log_error "remove_tmp_dir" "REMOVE_FAILED" "Failed to remove directory: $TMP_DIR"
-        echo -e "${RED}TMP might still exist...${NC}"
+        #echo -e "${RED}TMP might still exist...${NC}"
         return 1 #FAILED!  
     fi
 }
