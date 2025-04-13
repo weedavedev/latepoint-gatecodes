@@ -100,6 +100,7 @@ if command -v git /dev/null && [ -d ".git" ]; then
 
     #show current git status before comfirming basic commit
     git status
+    echo "This is experimental, confirm branches, and potential merges etc"
     read -p "Confirm 'git commit -am Bumper commit version to $RELEASE_VERSION' command (Y/n)" GIT_COMMIT
     if [[ "$GIT_COMMIT" == "Y" ]]; then
         git add . 
@@ -149,7 +150,7 @@ echo "-- Starting to zip files into ${ZIP_NAME}"
 
 # Create the ZIP file from the temp directory
 #echo -e to change working text to blue, sucess message will reset.
-(echo -e "${BLUE}" && cd "$TMP_DIR" && zip -r "$OLDPWD/$ZIP_NAME" "$PLUGIN_SLUG")
+(echo -e "${BLUE}" && cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/$ZIP_NAME" .)
 
 # Check if zip was created successfully
 if [ -f "$ZIP_NAME" ]; then
