@@ -1,10 +1,31 @@
 #!/bin/bash
+
+update_version_in_file() {
+    local file_path="$1"
+    local curr_version="$2"
+    local new_version="$3"
+    local file_type="$4"  # "Source" or "Zip" description
+    
+    # Update version numbers
+    sed -i "s/Version: $curr_version/Version: $new_version/" "$file_path"
+    sed -i "s/const VERSION = '$curr_version';/const VERSION = '$new_version';/" "$file_path"
+    
+    # Verify update was successful
+    if grep -q "Version: $new_version" "$file_path" || grep -q "const VERSION = '$new_version'" "$file_path"; then
+        echo "$file_type version updated to $new_version in $(basename "$file_path")"
+    else
+        echo "$file_type version number not updated... Manual update required to match."
+    fi
+}
+
 #production ready script for wordpress plug ins.
 #script will create a zip and output necessary feedback about plugin files. 
 #TODO: 
 #- create individuel functions for portablility 
+#- add flow control with functions, current status and errors etc. implement optional operations choose 1-9.
 #- add method to import parameters of files 
 #- add more cross over checks for README/Mainfile/CSS VERISON numbers
+#- Git commit before changing file version numbers
 #
 # Colors for output
 RED='\033[0;31m'
@@ -66,19 +87,32 @@ if [ -z "$CURR_VERSION" ]; then
     echo -e "${RED}Could not find current version number"
 fi
 
-echo "Update version number? current version(${CURR_VERSION})"
-read -p "Enter new version number, or blank to not change: " RELEASE_VERSION
-
+read -e -p "($CURR_VERSION) found, enter new number? " -i "$CURR_VERSION" RELEASE_VERSION
+# 
+# How about a quick git commit here before editing files? 
+#
 if [ -z "$RELEASE_VERSION" ]; then
     RELEASE_VERSION=$CURR_VERSION
     echo -e "${BLUE}Using current version (${RELEASE_VERSION})${NC}"
 else
-    echo -e "${GREEN}Version number updated to (${RELEASE_VERSION})${NC}"
-fi
+    echo "Updating version number to $RELEASE_VERSION"
+    
+    read -p "Update both zip and source? (Y/(S)ource/(Z)ip/N)" UPDATE_LIST
+    UPDATE_LIST="${UPDATE_LIST^^}"  # Convert to uppercase
+    CURRENT_DIR="$(pwd)"
 
+    # Update source file if requested
+    if [[ "$UPDATE_LIST" == "Y" || "$UPDATE_LIST" == "S" ]]; then
+        update_version_in_file "${CURRENT_DIR}/${MAIN_FILE}" "$CURR_VERSION" "$RELEASE_VERSION" "Source"
+    fi
+
+    # Update zip file if requested
+    if [[ "$UPDATE_LIST" == "Y" || "$UPDATE_LIST" == "Z" ]]; then
+        update_version_in_file "${TMP_PLUGIN_DIR}/${MAIN_FILE}" "$CURR_VERSION" "$RELEASE_VERSION" "Zip"
+    fi
+fi
+exit 1
 #add README_VER checks as well
-#NEW_VER
-RELEASE_VERSION="1.0.0" #update soon
 
 # 2. Set DEBUG = false 
 echo "-- Setting debug mode to false"
