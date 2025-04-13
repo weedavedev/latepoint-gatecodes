@@ -185,11 +185,11 @@ create_zip_file() {
     # Create the ZIP file from the temp directory
     #echo -e to change working text to blue, sucess message will reset.
     echo -e "${BLUE}" 
-    (cd "$TMP_DIR/PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
+    (cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
     ZIP_STATUS=$?
 
     #error check on sucessful zipping
-    if [ $ZIP_STATUS -ne 0]; then 
+    if [ $ZIP_STATUS -ne 0 ]; then 
         log_error "create_zip_file" "ZIP_CMD_ERROR" "Zip command fialed with status $ZIP_STATUS"
         return 1
     fi
@@ -210,7 +210,7 @@ create_zip_file() {
 }
 
 ZIP_NAME="${PLUGIN_SLUG}-${RELEASE_VERSION}.zip"
-create_zip_file "$ZIP_NAME"
+create_zip_file "$ZIP_NAME" "$TMP_DIR" "$PLUGIN_SLUG"
 
 if [ $? -ne 0 ]; then
     echo "Warning: error creating zip file"
