@@ -145,14 +145,29 @@ fi
 #add README_VER checks as well
 
 # 3. Set DEBUG = false 
-echo "-- Setting debug mode to false"
-sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$TMP_PLUGIN_DIR/$MAIN_FILE" 
-if grep -q "const DEBUG = true" "$TMP_PLUGIN_DIR/$MAIN_FILE"; then
-    echo -e "${RED}Failed to set debug = false${NC}"
-else
-    echo -e "${GREEN}DEBUG = FALSE${NC}"
-fi
+disable_debug() {
+    local FILE="$1"
+    
+    if [ ! -f "$FILE" ]; then
+        error_log "disable_debug" "DIS_DEBUG_FILE" "File cannot be found aboard the ship: $FILE"
+        return 1
+    fi
 
+    echo "-- Setting debug mode to false"
+
+    sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$FILE" 
+
+    if grep -q "const DEBUG = true" "$FILE"; then
+        echo -e "${RED}Failed to set debug = false${NC}"
+        log_error "disable_debug" "DIS_DEBUG_ERROR" "Failed to disable debug"
+        return 1
+    else
+        echo -e "${GREEN}DEBUG = FALSE${NC}"
+        return 0
+    fi
+}
+
+disable_debug "$TMP_PLUGIN_DIR/$MAIN_FILE" 
 
 
 #space for more functions...
