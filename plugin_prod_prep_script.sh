@@ -148,15 +148,20 @@ fi
 ZIP_NAME="${PLUGIN_SLUG}-${RELEASE_VERSION}.zip"
 echo "-- Starting to zip files into ${ZIP_NAME}"
 
+#create a zip_files dir if not already avaliable 
+if [ ! -d "zip_files" ]; then 
+    mkdir "zip_files"
+    echo "Created zip directory"
+fi
 # Create the ZIP file from the temp directory
 #echo -e to change working text to blue, sucess message will reset.
-(echo -e "${BLUE}" && cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/$ZIP_NAME" .)
+(echo -e "${BLUE}" && cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
 
 # Check if zip was created successfully
-if [ -f "$ZIP_NAME" ]; then
+if [ -f "zip_files/$ZIP_NAME" ]; then
     # List the contents of the zip to verify
     echo -e "${GREEN}ZIP created successfully. Contents:${NC}"
-    unzip -l "$ZIP_NAME"
+    unzip -l "zip_files/$ZIP_NAME"
 else
     echo -e "${RED}Failed to create ZIP file${NC}"
 fi
