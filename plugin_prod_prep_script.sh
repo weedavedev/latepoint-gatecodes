@@ -160,26 +160,62 @@ fi
 
 
 #10. Create the ZIP file
+create_zip_file() {
+    local ZIP_NAME="$1"
+    local TMP_DIR="$2"
+    local PLUGIN_SLUG="$3"
+
+
+    echo "-- Starting to zip files into ${ZIP_NAME}"
+
+    #create a zip_files dir if not already avaliable 
+    if [ ! -d "zip_files" ]; then 
+        mkdir "zip_files" || {
+            log_error "create_zip_file" "DIR_CREATE_ERROR" "Could not create zip_files directory"
+            return 1
+        }
+        echo "Created zip directory"
+    fi
+
+    if [ ! -d "$TMP_DIR/$PLUGIN_SLUG" ]; then
+        log_error "create_zip_file" "SRC_DIR_ERROR" "Source directory $TMP/$PLUGIN_DIR Not found"
+        return 1
+    fi
+
+    # Create the ZIP file from the temp directory
+    #echo -e to change working text to blue, sucess message will reset.
+    echo -e "${BLUE}" 
+    (cd "$TMP_DIR/PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
+    ZIP_STATUS=$?
+
+    #error check on sucessful zipping
+    if [ $ZIP_STATUS -ne 0]; then 
+        log_error "create_zip_file" "ZIP_CMD_ERROR" "Zip command fialed with status $ZIP_STATUS"
+        return 1
+    fi
+
+    # Check if zip was created successfully
+    if [ -f "zip_files/$ZIP_NAME" ]; then
+        ZIP_SIZE=$(du -h "zip_files/$ZIP_NAME" | cut -f1)
+        # List the contents of the zip to verify
+        echo -e "${GREEN}ZIP created successfully: $ZIP_NAME ($ZIP_SIZE)"
+        echo -e "${BLUE}Contents:${NC}"
+        unzip -l "zip_files/$ZIP_NAME"
+        return 0
+    else
+        log_error "create_zip_file" "ZIP_CREATE_ERROR" "Zip file not created."
+        #echo -e "${RED}Failed to create ZIP file${NC}"
+        return 1
+    fi
+}
+
 ZIP_NAME="${PLUGIN_SLUG}-${RELEASE_VERSION}.zip"
-echo "-- Starting to zip files into ${ZIP_NAME}"
+create_zip_file "$ZIP_NAME"
 
-#create a zip_files dir if not already avaliable 
-if [ ! -d "zip_files" ]; then 
-    mkdir "zip_files"
-    echo "Created zip directory"
+if [ $? -ne 0 ]; then
+    echo "Warning: error creating zip file"
 fi
-# Create the ZIP file from the temp directory
-#echo -e to change working text to blue, sucess message will reset.
-(echo -e "${BLUE}" && cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
 
-# Check if zip was created successfully
-if [ -f "zip_files/$ZIP_NAME" ]; then
-    # List the contents of the zip to verify
-    echo -e "${GREEN}ZIP created successfully. Contents:${NC}"
-    unzip -l "zip_files/$ZIP_NAME"
-else
-    echo -e "${RED}Failed to create ZIP file${NC}"
-fi
 
 #11. Remove temp directory
 remove_tmp_dir() {
