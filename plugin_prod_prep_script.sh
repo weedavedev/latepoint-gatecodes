@@ -18,6 +18,17 @@ update_version_in_file() {
     fi
 }
 
+declare -a ERROR_LOG=()
+
+log_error(){
+    local function_name="$1"
+    local error_code="$2"
+    local error_message="$3"
+
+    ERROR_LOG+=("[$function_name] $error_code: $error_message")
+}
+
+
 #production ready script for wordpress plug ins.
 #script will create a zip and output necessary feedback about plugin files. 
 #TODO: 
@@ -110,7 +121,7 @@ if command -v git /dev/null && [ -d ".git" ]; then
 fi
         
 #
-#then update the file in locations
+#2.2 Update the files in locations
 if [ -z "$RELEASE_VERSION" ]; then
     RELEASE_VERSION=$CURR_VERSION
     echo -e "${BLUE}Using current version (${RELEASE_VERSION})${NC}"
@@ -133,7 +144,7 @@ else
 fi
 #add README_VER checks as well
 
-# 2. Set DEBUG = false 
+# 3. Set DEBUG = false 
 echo "-- Setting debug mode to false"
 sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$TMP_PLUGIN_DIR/$MAIN_FILE" 
 if grep -q "const DEBUG = true" "$TMP_PLUGIN_DIR/$MAIN_FILE"; then
@@ -142,7 +153,11 @@ else
     echo -e "${GREEN}DEBUG = FALSE${NC}"
 fi
 
+
+
 #space for more functions...
+
+
 
 #10. Create the ZIP file
 ZIP_NAME="${PLUGIN_SLUG}-${RELEASE_VERSION}.zip"
@@ -167,12 +182,43 @@ else
 fi
 
 #11. Remove temp directory
-rm -rf "$TMP_DIR"
-if [ ! -d "$TMP_DIR" ]; then
-    echo -e "${GREEN}Removed TMP directory${NC}"
-else
-    echo -e "${RED}TMP might still exist...${NC}"
+remove_tmp_dir() {
+    local TMP_DIR="$1"
+
+    #check for the dir before removing it
+    if [ ! -d "$TMP_DIR" ]; then
+        log_error "remove_tmp_dir" "NOT_FOUND" "Directory does not exist: $TMP_DIR"
+        return 1
+    fi
+
+    #try to remove the dir
+    rm -rf "$TMP_DIR"
+
+    if [ ! -d "$TMP_DIR" ]; then
+        echo -e "${GREEN}Removed TMP directory${NC}"
+        return 0
+    else
+        log_error "remove_tmp_dir" "REMOVE_FAILED" "Failed to remove directory: $TMP_DIR"
+        echo -e "${RED}TMP might still exist...${NC}"
+        return 1 #FAILED!  
+    fi
+}
+
+remove_tmp_dir "$TMP_DIR"
+if [ $? -ne 0 ]; then
+    echo "Warning: error with cleaning up tmp files"
 fi
 
-#12. exit
+display_errors(){
+    if [ ${#ERROR_LOG[@]} -eq 0 ]; then
+        echo -e "${GREEN}No errors${NC}"
+    else
+        echo -e "${RED}Errors occoured${NC}"
+        for error in "${ERROR_LOG[@]}"; do
+            echo -e " - $error"
+        done
+    fi
+}
+#12. show errors and exit
+display_errors
 echo "-- Thanks for flying with us today..."
