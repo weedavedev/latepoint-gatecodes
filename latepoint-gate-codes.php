@@ -213,42 +213,45 @@ class LatePoint_Gate_Codes {
         if ($booking && strtolower($booking->status) === 'approved') {
             try {
                 // Check if booking is for the current day
-                if (isset($booking->start_date)) {
-                    // Get current date as DateTime object
-                    $current_date = new DateTime(current_time('Y-m-d'));
-                    
-                    // Make sure booking date is also a DateTime object
-                    $booking_date = null;
+                if (!isset($booking->start_date)) {
+                    $this->log_debug('Missing start date: ' . print_r($booking, true));
+                    return;
+                }
+
+                // Get current date as DateTime object
+                $current_date = new DateTime(current_time('Y-m-d'));
+                
+                // Convert booking date to DateTime safely
+                try {
                     if ($booking->start_date instanceof DateTime) {
                         $booking_date = $booking->start_date;
                     } else {
                         // If it's a string, convert it
                         $booking_date = new DateTime($booking->start_date);
                     }
-
-                    // Calculate days difference
-                    $days_diff = (int)$current_date->diff($booking_date)->format('%r%a');
-
-                    $this->log_debug('Booking data - Start date: ' . $booking_date->format('Y-m-d') . 
-                                    ' Current date: ' . $current_date->format('Y-m-d') . 
-                                    ' Days difference: ' . $days_diff);
-                    
-                    // Only show gate code if booking is within 2 days (past or future)
-                    // FIXED LOGIC: If days_diff < -2 (more than 2 days in the past) OR days_diff > 2 (more than 2 days in the future)
-                    if (abs($days_diff) > 2) {
-                        if ($days_diff < 0) {
-                            if ($days_diff < 0) {
-                                $this->log_debug('Not showing code as it\'s a past booking (more than 2 days ago)');
-                            } else {
-                                $this->log_debug('Not showing code as it\'s too far in future, see email');
-                            }
-                            return; // Return to jump out, and not show code
-                        }
-                    }
-
-                } else {
-                    $this->log_debug('Missing start date: ' . print_r($booking, true));
+                } catch (Exception $e) {
+                    $this->log_debug('Invalid start date passed for gatecode' . print_r($booking->start_date, true));
                     return;
+                }
+
+                // Calculate days difference
+                $days_diff = (int)$current_date->diff($booking_date)->format('%r%a');
+
+                $this->log_debug('Booking data - Start date: ' . $booking_date->format('Y-m-d') . 
+                                ' Current date: ' . $current_date->format('Y-m-d') . 
+                                ' Days difference: ' . $days_diff);
+                
+                // Only show gate code if booking is within 2 days (past or future)
+                // FIXED LOGIC: If days_diff < -2 (more than 2 days in the past) OR days_diff > 2 (more than 2 days in the future)
+                if (abs($days_diff) > 2) {
+                    if ($days_diff < 0) {
+                        if ($days_diff < 0) {
+                            $this->log_debug('Not showing code as it\'s a past booking (more than 2 days ago)');
+                        } else {
+                            $this->log_debug('Not showing code as it\'s too far in future, see email');
+                        }
+                        return; // Return to jump out, and not show code
+                    }
                 }
                 
                 $agent_id = intval($booking->agent_id);
