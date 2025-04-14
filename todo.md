@@ -28,7 +28,7 @@ This document outlines the planned improvements for the LatePoint Gate Codes plu
      - Display timing window (currently hardcoded to 2 days)
      - Toggle email reminder message
 
-5. **Enhanced Security**
+5. **Enhanced Security** (for other use cases)
    - Implement more secure gate code generation algorithm
    - Add option for time-based code expiration
    - Add proper nonce verification for admin actions
@@ -41,37 +41,16 @@ This document outlines the planned improvements for the LatePoint Gate Codes plu
 ## Lower Priority
 
 7. **Additional Features**
-   - QR code generation for gate codes
    - Gate code verification system
    - Admin ability to manually regenerate codes
-   - Optional SMS notification with gate code
 
 8. **Performance Improvements**
-   - Implement caching for gate codes
    - Optimize database queries
    - Minify CSS assets
 
 9. **Testing Framework**
    - Create unit tests for code generation logic
    - Set up testing environment
-   - Implement CI/CD pipeline
-
-10. **Localization Improvements**
-    - Complete internationalization support
-    - Create translation template files
-    - Add RTL support for CSS
-
-## Future Considerations
-
-11. **Analytics**
-    - Track gate code usage
-    - Reporting on gate code distribution
-    - Integration with access control systems
-
-12. **Extended Compatibility**
-    - Test with upcoming WordPress versions
-    - Ensure compatibility with other popular plugins
-    - Mobile app integration
 
 ---
 
