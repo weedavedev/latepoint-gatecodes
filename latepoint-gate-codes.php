@@ -235,13 +235,15 @@ class LatePoint_Gate_Codes {
                     
                     // Only show gate code if booking is within 2 days (past or future)
                     // FIXED LOGIC: If days_diff < -2 (more than 2 days in the past) OR days_diff > 2 (more than 2 days in the future)
-                    if ($days_diff < -2 || $days_diff > 2) {
+                    if (abs($days_diff) > 2) {
                         if ($days_diff < 0) {
-                            $this->log_debug('Not showing code as it\'s a past booking (more than 2 days ago)');
-                        } else {
-                            $this->log_debug('Not showing code as it\'s too far in future, see email');
+                            if ($days_diff < 0) {
+                                $this->log_debug('Not showing code as it\'s a past booking (more than 2 days ago)');
+                            } else {
+                                $this->log_debug('Not showing code as it\'s too far in future, see email');
+                            }
+                            return; // Return to jump out, and not show code
                         }
-                        return; // Return to jump out, and not show code
                     }
 
                 } else {
