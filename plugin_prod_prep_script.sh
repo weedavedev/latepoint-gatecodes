@@ -18,6 +18,17 @@ update_version_in_file() {
     fi
 }
 
+declare -a ERROR_LOG=()
+
+log_error(){
+    local function_name="$1"
+    local error_code="$2"
+    local error_message="$3"
+
+    ERROR_LOG+=("[$function_name] $error_code: $error_message")
+}
+
+
 #production ready script for wordpress plug ins.
 #script will create a zip and output necessary feedback about plugin files. 
 #TODO: 
@@ -110,7 +121,7 @@ if command -v git /dev/null && [ -d ".git" ]; then
 fi
         
 #
-#then update the file in locations
+#2.2 Update the files in locations
 if [ -z "$RELEASE_VERSION" ]; then
     RELEASE_VERSION=$CURR_VERSION
     echo -e "${BLUE}Using current version (${RELEASE_VERSION})${NC}"
@@ -133,46 +144,132 @@ else
 fi
 #add README_VER checks as well
 
-# 2. Set DEBUG = false 
-echo "-- Setting debug mode to false"
-sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$TMP_PLUGIN_DIR/$MAIN_FILE" 
-if grep -q "const DEBUG = true" "$TMP_PLUGIN_DIR/$MAIN_FILE"; then
-    echo -e "${RED}Failed to set debug = false${NC}"
-else
-    echo -e "${GREEN}DEBUG = FALSE${NC}"
-fi
+# 3. Set DEBUG = false 
+disable_debug() {
+    local FILE="$1"
+    
+    if [ ! -f "$FILE" ]; then
+        error_log "disable_debug" "DIS_DEBUG_FILE" "File cannot be found aboard the ship: $FILE"
+        return 1
+    fi
+
+    echo "-- Setting debug mode to false"
+
+    sed -i 's/const DEBUG = true;/const DEBUG = false;/' "$FILE" 
+
+    if grep -q "const DEBUG = true" "$FILE"; then
+        echo -e "${RED}Failed to set debug = false${NC}"
+        log_error "disable_debug" "DIS_DEBUG_ERROR" "Failed to disable debug"
+        return 1
+    else
+        echo -e "${GREEN}DEBUG = FALSE${NC}"
+        return 0
+    fi
+}
+
+disable_debug "$TMP_PLUGIN_DIR/$MAIN_FILE" 
+
 
 #space for more functions...
 
+
+
 #10. Create the ZIP file
+create_zip_file() {
+    local ZIP_NAME="$1"
+    local TMP_DIR="$2"
+    local PLUGIN_SLUG="$3"
+
+
+    echo "-- Starting to zip files into ${ZIP_NAME}"
+
+    #create a zip_files dir if not already avaliable 
+    if [ ! -d "zip_files" ]; then 
+        mkdir "zip_files" || {
+            log_error "create_zip_file" "DIR_CREATE_ERROR" "Could not create zip_files directory"
+            return 1
+        }
+        echo "Created zip directory"
+    fi
+
+    if [ ! -d "$TMP_DIR/$PLUGIN_SLUG" ]; then
+        log_error "create_zip_file" "SRC_DIR_ERROR" "Source directory $TMP/$PLUGIN_DIR Not found"
+        return 1
+    fi
+
+    # Create the ZIP file from the temp directory
+    #echo -e to change working text to blue, sucess message will reset.
+    echo -e "${BLUE}" 
+    (cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
+    ZIP_STATUS=$?
+
+    #error check on sucessful zipping
+    if [ $ZIP_STATUS -ne 0 ]; then 
+        log_error "create_zip_file" "ZIP_CMD_ERROR" "Zip command fialed with status $ZIP_STATUS"
+        return 1
+    fi
+
+    # Check if zip was created successfully
+    if [ -f "zip_files/$ZIP_NAME" ]; then
+        ZIP_SIZE=$(du -h "zip_files/$ZIP_NAME" | cut -f1)
+        # List the contents of the zip to verify
+        echo -e "${GREEN}ZIP created successfully: $ZIP_NAME ($ZIP_SIZE)"
+        echo -e "${BLUE}Contents:${NC}"
+        unzip -l "zip_files/$ZIP_NAME"
+        return 0
+    else
+        log_error "create_zip_file" "ZIP_CREATE_ERROR" "Zip file not created."
+        #echo -e "${RED}Failed to create ZIP file${NC}"
+        return 1
+    fi
+}
+
 ZIP_NAME="${PLUGIN_SLUG}-${RELEASE_VERSION}.zip"
-echo "-- Starting to zip files into ${ZIP_NAME}"
+create_zip_file "$ZIP_NAME" "$TMP_DIR" "$PLUGIN_SLUG"
 
-#create a zip_files dir if not already avaliable 
-if [ ! -d "zip_files" ]; then 
-    mkdir "zip_files"
-    echo "Created zip directory"
+if [ $? -ne 0 ]; then
+    echo "Warning: error creating zip file"
 fi
-# Create the ZIP file from the temp directory
-#echo -e to change working text to blue, sucess message will reset.
-(echo -e "${BLUE}" && cd "$TMP_DIR/$PLUGIN_SLUG" && zip -r "$OLDPWD/zip_files/$ZIP_NAME" .)
 
-# Check if zip was created successfully
-if [ -f "zip_files/$ZIP_NAME" ]; then
-    # List the contents of the zip to verify
-    echo -e "${GREEN}ZIP created successfully. Contents:${NC}"
-    unzip -l "zip_files/$ZIP_NAME"
-else
-    echo -e "${RED}Failed to create ZIP file${NC}"
-fi
 
 #11. Remove temp directory
-rm -rf "$TMP_DIR"
-if [ ! -d "$TMP_DIR" ]; then
-    echo -e "${GREEN}Removed TMP directory${NC}"
-else
-    echo -e "${RED}TMP might still exist...${NC}"
+remove_tmp_dir() {
+    local TMP_DIR="$1"
+
+    #check for the dir before removing it
+    if [ ! -d "$TMP_DIR" ]; then
+        log_error "remove_tmp_dir" "NOT_FOUND" "Directory does not exist: $TMP_DIR"
+        return 1
+    fi
+
+    #try to remove the dir
+    rm -rf "$TMP_DIR"
+
+    if [ ! -d "$TMP_DIR" ]; then
+        echo -e "${GREEN}Removed TMP directory${NC}"
+        return 0
+    else
+        log_error "remove_tmp_dir" "REMOVE_FAILED" "Failed to remove directory: $TMP_DIR"
+        #echo -e "${RED}TMP might still exist...${NC}"
+        return 1 #FAILED!  
+    fi
+}
+
+remove_tmp_dir "$TMP_DIR"
+if [ $? -ne 0 ]; then
+    echo "Warning: error with cleaning up tmp files"
 fi
 
-#12. exit
+display_errors(){
+    if [ ${#ERROR_LOG[@]} -eq 0 ]; then
+        echo -e "${GREEN}No errors${NC}"
+    else
+        echo -e "${RED}Errors occoured${NC}"
+        for error in "${ERROR_LOG[@]}"; do
+            echo -e " - $error"
+        done
+    fi
+}
+#12. show errors and exit
+display_errors
 echo "-- Thanks for flying with us today..."
