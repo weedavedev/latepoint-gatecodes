@@ -316,38 +316,6 @@ class LatePoint_Gate_Codes {
             return "#ERR";
         }
     }
-
-    /**
-     * Generate HTML for gate code to be used in email templates
-     * 
-     * @param int $agent_id The agent ID to use in the gate code
-     * @param string|DateTime $date_string A date string or DateTime object
-     * @param bool $return Whether to return or echo the HTML
-     * @return string|void HTML output if $return is true, otherwise echoes HTML
-     */
-    public function get_gate_code_email_html($agent_id, $date_string, $return = false) {
-        // Convert to string if it's a DateTime object
-        if ($date_string instanceof DateTime) {
-            $date_string = $date_string->format('Y-m-d');
-        }
-        
-        $gate_code = $this->get_gate_code($agent_id, $date_string);
-        
-        $html = '<div style="background-color: #f7f9fc; border-radius: 4px; padding: 20px; margin: 25px 0; ' .
-                'text-align: center; border: 2px dashed #2d54de; font-family: sans-serif;">' .
-                '<div style="font-size: 14px; font-weight: bold; color: #6d6d6d; text-transform: uppercase; ' .
-                'letter-spacing: 1.5px; margin-bottom: 10px;">' . 
-                esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>' .
-                '<div style="font-size: 32px; font-weight: 700; color: #2d54de; line-height: 1.2; ' .
-                'letter-spacing: 1px;">' . esc_html($gate_code) . '</div>' .
-                '</div>';
-        
-        if ($return) {
-            return $html;
-        }
-        
-        echo $html;
-    }
 }
 
 // Initialize the plugin
@@ -371,16 +339,3 @@ function get_gate_code($agent_id, $date_string) {
     return $plugin->get_gate_code($agent_id, $date_string);
 }
 
-/**
- * Global function to get HTML for gate code
- * This allows the function to be called from anywhere without having to directly access the class instance
- *
- * @param int $agent_id The agent ID to use in the gate code
- * @param string $date_string A date string that can be converted to DateTime
- * @param bool $return Whether to return or echo the HTML
- * @return string|void HTML output if $return is true, otherwise echoes HTML
- */
-function get_gate_code_email_html($agent_id, $date_string, $return = false) {
-    $plugin = LatePoint_Gate_Codes();
-    return $plugin->get_gate_code_email_html($agent_id, $date_string, $return);
-}
