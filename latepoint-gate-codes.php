@@ -106,7 +106,7 @@ class LatePoint_Gate_Codes {
     public function latepoint_missing_notice() {
         ?>
         <div class="notice notice-error">
-            <p><?php _e('LatePoint Gate Codes addon requires the LatePoint plugin to be installed and activated.', 'latepoint-gate-codes'); ?></p>
+            <p><?php _ex('LatePoint Gate Codes addon requires the LatePoint plugin to be installed and activated.', 'Admin error notice', 'latepoint-gate-codes'); ?></p>
         </div>
         <?php
     }
@@ -183,15 +183,15 @@ class LatePoint_Gate_Codes {
                     wp_kses(
                         sprintf(
                             '<div class="os-gate-code-label">%s</div>',
-                            esc_html__('GATE CODE', 'latepoint-gate-codes'),
+                            _x('GATE CODE', 'Header label for gatecode', 'latepoint-gate-codes'),
                         ),
                         $this->kses_args
                     ), 
                     wp_kses(
                         sprintf(
                             '<div class="os-gate-code-value">%s<br>%s</div>', 
-                            esc_html__('Multiple bookings found', 'latepoint-gate-codes'),
-                            esc_html__('Check individual bookings for separate gate codes', 'latepoint-gate-codes'),
+                            _x('Multiple bookings found', 'Warning message about multiple bookings', 'latepoint-gate-codes'),
+                            _x('Check individual bookings for separate gate codes', 'Instructions for multiple bookings', 'latepoint-gate-codes'),
                         ),
                         $this->kses_args
                     )
@@ -263,21 +263,21 @@ class LatePoint_Gate_Codes {
                     wp_kses(
                         sprintf(
                             '<div class="os-gate-code-label">%s</div>',
-                            esc_html__('GATE CODE', 'latepoint-gate-codes'),
+                            _x('GATE CODE', 'Header label for gatecode', 'latepoint-gate-codes'),
                         ),
                         $this->kses_args
                     ),
                     wp_kses(
                         sprintf(
                             '<div class="os-gate-code-value">%s</div>',
-                            esc_html($gate_code, 'latepoint-gate-codes'),
+                            esc_html($gate_code),
                         ),
                         $this->kses_args
                     ),
                     wp_kses(
                         sprintf(
                             '<div class="os-gate-code-email-reminder">%s</div>',
-                            esc_html__('Your gate code is also in an email confirmation!', 'latepoint-gate-codes'),
+                            _x('Your gate code is also in an email confirmation!', 'Email reminder pop up', 'latepoint-gate-codes'),
                         ),
                         $this->kses_args
                     )
@@ -299,7 +299,7 @@ class LatePoint_Gate_Codes {
      */
     private function generate_gate_code($field, $date) {
         if (!$date instanceof DateTime || !is_int($field)) {
-            return "#ERR";
+            return _x('#ERR', 'Error placeholder for gatecode', 'latepoint-gate-codes');
         }
         return "#" . $field . $field . sprintf("%02d", $date->format("W"));
     }
