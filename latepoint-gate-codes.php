@@ -195,7 +195,7 @@ class LatePoint_Gate_Codes {
                         ),
                         $this->kses_args
                     )
-                )
+                );
             }
         } else {
             // It's a single booking object
@@ -252,12 +252,31 @@ class LatePoint_Gate_Codes {
                 $agent_id = intval($booking->agent_id);
                 $gate_code = $this->generate_gate_code($agent_id, $booking_date);
 
-                echo '<div class="os-gate-code">';
-                echo '<div class="os-gate-code-label">' . esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>';
-                echo '<div class="os-gate-code-value">' . esc_html($gate_code) . '</div>';
-                echo '<div class="os-gate-code-email-reminder">' .
-                    esc_html__('Your gate code is also in an email confirmation!', 'latepoint-gate-codes') . '</div>';
-                echo '</div>';
+                printf(
+                    '<div class="%s">%s%s%s</div>',
+                    esc_attr('os-gate-code'),
+                    wp_kses(
+                        sprintf(
+                            '<div class="os-gate-code-label">%s</div>',
+                            esc_html__('GATE CODE', 'latepoint-gate-codes'),
+                        ),
+                        $this->kses_args
+                    ),
+                    wp_kses(
+                        sprintf(
+                            '<div class="os-gate-code-value">%s</div>',
+                            esc_html($gate_code, 'latepoint-gate-codes'),
+                        ),
+                        $this->kses_args
+                    ),
+                    wp_kses(
+                        sprintf(
+                            '<div class="os-gate-code-email-reminder">%s</div>',
+                            esc_html__('Your gate code is also in an email confirmation!', 'latepoint-gate-codes'),
+                        ),
+                        $this->kses_args
+                    )
+                );
             } catch (Exception $e) {
                 $this->log_debug('Error creating gate code: ' . $e->getMessage());
             }
