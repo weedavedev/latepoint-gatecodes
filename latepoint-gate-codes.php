@@ -82,7 +82,15 @@ class LatePoint_Gate_Codes {
      */
     private function log_debug($message) {
         if (self::DEBUG) {
-            error_log('LATEPOINT_GATECODES: ' . $message);
+            //use sanatize_text_field to clean the message 
+            $sanatised_message = sanitize_text_field($message);
+
+            //if messafe is an object array use print_r
+            if (is_object($message) || is_array($message)) {
+                $sanatised_message = sanitize_text_field(print_r($message, true));
+            }
+
+            error_log('LATEPOINT_GATECODES: ' . $sanatised_message);
         }
     }
 
@@ -142,7 +150,7 @@ class LatePoint_Gate_Codes {
         wp_enqueue_style('latepoint-gate-codes-styles');
 
         // Debug logging
-        $this->log_debug('Attempting to load CSS from: ' . LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css');
+        //$this->log_debug('Attempting to load CSS from: ' . LATEPOINT_GATE_CODES_PLUGIN_URL . 'assets/css/latepoint-gate-codes.css');
     }
 
     /**
