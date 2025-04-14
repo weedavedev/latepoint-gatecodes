@@ -94,6 +94,12 @@ class LatePoint_Gate_Codes {
         }
     }
 
+    private $kses_args = [
+                            'div' => [
+                                'class' => true
+                            ],
+                            'br' => []
+                        ];
     /**
      * Admin notice for missing LatePoint
      */
@@ -171,11 +177,25 @@ class LatePoint_Gate_Codes {
                 }
             } else if (count($bookings) > 1) {
                 // Multiple bookings, show info message
-                echo '<div class="os-gate-code os-gate-code-multiple">';
-                echo '<div class="os-gate-code-label">' . esc_html__('GATE CODE', 'latepoint-gate-codes') . '</div>';
-                echo '<div class="os-gate-code-value">' . esc_html__('Multiple bookings found', 'latepoint-gate-codes') .
-                    '<br>' . esc_html__('Check individual bookings for separate gate codes', 'latepoint-gate-codes') . '</div>';
-                echo '</div>';
+                printf(
+                    '<div class="%s">%s%s</div>',
+                    esc_attr('os-gate-code os-gate-code-multiple'),
+                    wp_kses(
+                        sprintf(
+                            '<div class="os-gate-code-label">%s</div>',
+                            esc_html__('GATE CODE', 'latepoint-gate-codes'),
+                        ),
+                        $this->kses_args
+                    ), 
+                    wp_kses(
+                        sprintf(
+                            '<div class="os-gate-code-value">%s<br>%s</div>', 
+                            esc_html__('Multiple bookings found', 'latepoint-gate-codes'),
+                            esc_html__('Check individual bookings for separate gate codes', 'latepoint-gate-codes'),
+                        ),
+                        $this->kses_args
+                    )
+                )
             }
         } else {
             // It's a single booking object
