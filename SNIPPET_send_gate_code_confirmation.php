@@ -90,7 +90,7 @@ function send_gate_code($booking){
 	//$check = wp_mail( $to, $subject,'test'.$gate_code, $headers );
 	$check = wp_mail( $to, $subject, $body, $headers );
 
-    if(!check) { 
+    if(!$check) { 
         error_log('LATEPOINT_GATECODES: Failed to send email for booking' . $booking->booking_code);
     }
 }
