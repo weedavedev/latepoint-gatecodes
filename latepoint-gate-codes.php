@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LatePoint Addon - Gate Codes
  * Description: LatePoint Addon that adds a gate code to booking summary and confirmations
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: Wallace Development
  * Plugin URI: https://wallacedevelopment.co.uk
  * Text Domain: latepoint-gate-codes
@@ -14,15 +14,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-
-// Register shutdown function to catch fatal errors
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-    }
-});
-
-// Log initialization
 
 /**
  * Main LatePoint Gate Codes class
@@ -36,7 +27,7 @@ class LatePoint_Gate_Codes {
     /**
      * Plugin version
      */
-    const VERSION = '1.0.7';
+    const VERSION = '1.0.8';
 
     /**
      * Debug mode
